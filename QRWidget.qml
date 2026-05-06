@@ -175,7 +175,7 @@ PluginComponent {
                 width: parent.width
                 headerText: "QR Generator"
                 detailsText: ""
-                showCloseButton: true
+                showCloseButton: false
 
                 Component.onDestruction: {
                     if (root.clearQrOnClose) {
