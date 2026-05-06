@@ -1,5 +1,5 @@
 {
-    "id": "qr-generator",
+    "id": "qrGenerator",
     "name": "QR Generator",
     "description": "Generate QR codes from clipboard or text, with export support",
     "version": "1.0.0",
