@@ -273,14 +273,13 @@ PluginComponent {
                     }
                     
                     StyledText {
-                        text: "Hint: Right-click icon to quickly generate from clipboard."
+                        text: "Hint: [Enter] to copy QR. Right-click bar icon to pull from clipboard."
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         horizontalAlignment: Text.AlignHCenter
                         width: parent.width
                         visible: root.showHints
-                    }
-                }
+                    }                }
             }
         }
     }
