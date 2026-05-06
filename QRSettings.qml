@@ -30,24 +30,36 @@ PluginSettings {
             spacing: Theme.spacingM
 
             StyledText {
-                text: "Generation"
+                text: "Generation & Privacy"
                 font.pixelSize: Theme.fontSizeMedium
                 font.weight: Font.Medium
                 color: Theme.surfaceText
             }
 
             ToggleSetting {
-                settingKey: "autoClipboard"
-                label: "Auto-generate from Clipboard"
-                description: "Automatically update the QR code whenever you copy new text."
-                defaultValue: false
+                settingKey: "clearQrOnClose"
+                label: "Clear QR Code on Close"
+                description: "Automatically clear the text and QR code when you close the popout."
+                defaultValue: true
             }
 
-            ToggleSetting {
-                settingKey: "keepQrOnClose"
-                label: "Keep QR Code on Close"
-                description: "If disabled, the QR code will be cleared when you close the popout for privacy."
-                defaultValue: false
+            SelectionSetting {
+                settingKey: "pillStyle"
+                label: "Bar Display Style"
+                description: "Choose how the plugin is displayed on the bar."
+                options: [
+                    { label: "Icon Only", value: "icon" },
+                    { label: "Icon + Text", value: "text" }
+                ]
+                defaultValue: "icon"
+            }
+
+            StringSetting {
+                settingKey: "savePath"
+                label: "Save Directory"
+                description: "Where to save exported QR code images."
+                placeholder: "~/Pictures/QRCodes"
+                defaultValue: "~/Pictures/QRCodes"
             }
 
             SelectionSetting {

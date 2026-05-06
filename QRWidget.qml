@@ -10,12 +10,21 @@ import qs.Modules.Plugins
 PluginComponent {
     id: root
 
-    readonly property bool autoClipboard: pluginData.autoClipboard ?? false
+    readonly property bool clearQrOnClose: pluginData.clearQrOnClose ?? true
+    readonly property string pillStyle: pluginData.pillStyle || "icon"
+    readonly property string savePath: pluginData.savePath || "~/Pictures/QRCodes"
     readonly property string qrSize: pluginData.qrSize || "6"
     
     property string currentText: ""
     property string qrImagePath: "file:///tmp/dms-qr.png"
     property string cacheBuster: ""
+    property var manualInputInput: null
+
+    function clearQR() {
+        currentText = "";
+        cacheBuster = "";
+        if (manualInputInput) manualInputInput.text = "";
+    }
 
     function generateQR(text) {
         if (!text) return;
@@ -38,15 +47,19 @@ PluginComponent {
 
     function saveImage() {
         if (!root.cacheBuster) return;
-        const timestamp = Date.now();
-        const exportPath = "~/Pictures/QRCodes/qr_" + timestamp + ".png";
+        
+        // Use a standardized filename: qr_YYYY-MM-DD_HHMMSS.png
+        const cmd = "DIR=\"" + root.savePath + "\"; " +
+                    "mkdir -p \"$DIR\"; " +
+                    "FILENAME=\"qr_$(date +%Y-%m-%d_%H%M%S).png\"; " +
+                    "cp /tmp/dms-qr.png \"$DIR/$FILENAME\"";
         
         Proc.runCommand(
             "export-qr",
-            ["sh", "-c", "mkdir -p ~/Pictures/QRCodes && cp /tmp/dms-qr.png " + exportPath],
+            ["sh", "-c", cmd],
             (stdout, exitCode) => {
                 if (exitCode === 0) {
-                    ToastService.showInfo("Saved to Pictures/QRCodes/");
+                    ToastService.showInfo("Saved to " + root.savePath);
                 } else {
                     ToastService.showError("Failed to save image.");
                 }
@@ -79,29 +92,26 @@ PluginComponent {
             (stdout, exitCode) => {
                 if (exitCode === 0) {
                     ToastService.showInfo("Text copied to clipboard!");
-                }
-            },
+                }},
             0
         )
     }
 
-    Connections {
-        target: ClipboardService
-        enabled: root.autoClipboard
-        
-        function onClipboardStateUpdate() {
-            Proc.runCommand(
-                "auto-clipboard-paste",
-                ["sh", "-c", "wl-paste --no-newline || xclip -selection clipboard -o"],
-                (stdout, exitCode) => {
-                    if (exitCode === 0 && stdout !== "" && stdout !== root.currentText) {
-                        manualInput.text = stdout;
-                        root.generateQR(stdout);
-                    }
-                },
-                100 
-            )
-        }
+    pillRightClickAction: () => {
+        // Fetch clipboard and generate QR before opening popout
+        Proc.runCommand(
+            "right-click-paste",
+            ["sh", "-c", "wl-paste --no-newline || xclip -selection clipboard -o"],
+            (stdout, exitCode) => {
+                if (exitCode === 0 && stdout !== "") {
+                    root.currentText = stdout;
+                    root.generateQR(stdout);
+                }
+                // Open the popout regardless of clipboard success
+                root.triggerPopout();
+            },
+            0
+        )
     }
 
     horizontalBarPill: Component {
@@ -110,14 +120,15 @@ PluginComponent {
             DankIcon {
                 name: "qr_code_2"
                 size: Theme.iconSizeSmall
-                color: Theme.primary
+                color: root.cacheBuster !== "" ? Theme.primary : Theme.surfaceText
                 anchors.verticalCenter: parent.verticalCenter
             }
             StyledText {
                 text: "QR"
                 font.pixelSize: Theme.fontSizeMedium
-                color: Theme.surfaceText
+                color: root.cacheBuster !== "" ? Theme.primary : Theme.surfaceText
                 anchors.verticalCenter: parent.verticalCenter
+                visible: root.pillStyle === "text"
             }
         }
     }
@@ -128,7 +139,7 @@ PluginComponent {
             DankIcon {
                 name: "qr_code_2"
                 size: Theme.iconSizeSmall
-                color: Theme.primary
+                color: root.cacheBuster !== "" ? Theme.primary : Theme.surfaceText
                 anchors.horizontalCenter: parent.horizontalCenter
             }
         }
@@ -139,6 +150,12 @@ PluginComponent {
             headerText: "QR Generator"
             detailsText: ""
             showCloseButton: true
+
+            Component.onDestruction: {
+                if (root.clearQrOnClose) {
+                    root.clearQR();
+                }
+            }
 
             Column {
                 width: parent.width
@@ -180,7 +197,12 @@ PluginComponent {
                         width: parent.width
                         placeholderText: "Type or paste text here..."
                         showClearButton: true
-                        Component.onCompleted: root.manualInputInput = manualInput
+                        Component.onCompleted: {
+                            root.manualInputInput = manualInput;
+                            if (root.currentText !== "") {
+                                manualInput.text = root.currentText;
+                            }
+                        }
                         onTextEdited: {
                             if (text !== "")
                                 root.generateQR(text);
@@ -222,7 +244,7 @@ PluginComponent {
                 }
                 
                 StyledText {
-                    text: "Hint: You can enable 'Auto-generate' in settings."
+                    text: "Hint: Right-click icon to quickly generate from clipboard."
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                     horizontalAlignment: Text.AlignHCenter
@@ -233,16 +255,5 @@ PluginComponent {
     }
 
     popoutWidth: 350
-    popoutHeight: 450
-}
-                  color: Theme.surfaceVariantText
-                    horizontalAlignment: Text.AlignHCenter
-                    width: parent.width
-                }
-            }
-        }
-    }
-
-    popoutWidth: 350
-    popoutHeight: 450
+    popoutHeight: (root.manualInputInput && root.manualInputInput.text !== "") ? 460 : 430
 }
