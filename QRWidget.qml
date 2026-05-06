@@ -200,6 +200,7 @@ PluginComponent {
                         showClearButton: true
                         Component.onCompleted: {
                             root.manualInputInput = manualInput;
+                            manualInput.forceActiveFocus();
                             if (root.currentText !== "") {
                                 manualInput.text = root.currentText;
                             }
