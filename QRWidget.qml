@@ -147,111 +147,126 @@ PluginComponent {
     }
 
     popoutContent: Component {
-        PopoutComponent {
-            headerText: "QR Generator"
-            detailsText: ""
-            showCloseButton: true
+        FocusScope {
+            id: contentFocusScope
+            anchors.fill: parent
+            focus: true
 
-            Component.onDestruction: {
-                if (root.clearQrOnClose) {
-                    root.clearQR();
+            property var parentPopout: null
+
+            Connections {
+                target: parentPopout
+                function onOpened() {
+                    Qt.callLater(() => manualInput.forceActiveFocus());
                 }
             }
 
-            Column {
-                width: parent.width
-                spacing: Theme.spacingL
+            PopoutComponent {
+                headerText: "QR Generator"
+                detailsText: ""
+                showCloseButton: true
 
-                // QR Display Area
-                StyledRect {
-                    width: 220
-                    height: 220
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    color: "white"
-                    radius: Theme.cornerRadiusSmall
-                    
-                    Image {
-                        id: qrImage
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        source: root.cacheBuster ? root.qrImagePath + "?t=" + root.cacheBuster : ""
-                        fillMode: Image.PreserveAspectFit
-                        visible: root.cacheBuster !== ""
-                    }
-
-                    StyledText {
-                        anchors.centerIn: parent
-                        text: "Ready to generate"
-                        color: "#333"
-                        visible: root.cacheBuster === ""
-                        font.pixelSize: Theme.fontSizeSmall
+                Component.onDestruction: {
+                    if (root.clearQrOnClose) {
+                        root.clearQR();
                     }
                 }
 
-                // Input & Actions Area
                 Column {
                     width: parent.width
-                    spacing: Theme.spacingM
+                    spacing: Theme.spacingL
 
-                    DankTextField {
-                        id: manualInput
-                        width: parent.width
-                        placeholderText: "Type or paste text here..."
-                        showClearButton: true
-                        Component.onCompleted: {
-                            root.manualInputInput = manualInput;
-                            manualInput.forceActiveFocus();
-                            if (root.currentText !== "") {
-                                manualInput.text = root.currentText;
-                            }
-                        }
-                        onTextEdited: {
-                            if (text !== "")
-                                root.generateQR(text);
-                        }
-                        onEditingFinished: {
-                            if (text !== "")
-                                root.generateQR(text);
-                        }
-                        onTextChanged: {
-                            if (text === "") {
-                                root.currentText = "";
-                                root.cacheBuster = "";
-                            }
-                        }
-                    }
-
-                    Row {
-                        width: parent.width
-                        spacing: Theme.spacingS
+                    // QR Display Area
+                    StyledRect {
+                        width: 220
+                        height: 220
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        color: "white"
+                        radius: Theme.cornerRadiusSmall
                         
-                        DankButton {
-                            text: "Copy Image"
-                            width: (parent.width - Theme.spacingS) / 2
-                            iconName: "content_copy"
-                            backgroundColor: Theme.secondary
-                            enabled: root.cacheBuster !== ""
-                            onClicked: root.copyImageToClipboard()
+                        Image {
+                            id: qrImage
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            source: root.cacheBuster ? root.qrImagePath + "?t=" + root.cacheBuster : ""
+                            fillMode: Image.PreserveAspectFit
+                            visible: root.cacheBuster !== ""
                         }
 
-                        DankButton {
-                            text: "Save Image"
-                            width: (parent.width - Theme.spacingS) / 2
-                            iconName: "save"
-                            backgroundColor: Theme.primary
-                            enabled: root.cacheBuster !== ""
-                            onClicked: root.saveImage()
+                        StyledText {
+                            anchors.centerIn: parent
+                            text: "Ready to generate"
+                            color: "#333"
+                            visible: root.cacheBuster === ""
+                            font.pixelSize: Theme.fontSizeSmall
                         }
                     }
-                }
-                
-                StyledText {
-                    text: "Hint: Right-click icon to quickly generate from clipboard."
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.surfaceVariantText
-                    horizontalAlignment: Text.AlignHCenter
-                    width: parent.width
-                    visible: root.showHints
+
+                    // Input & Actions Area
+                    Column {
+                        width: parent.width
+                        spacing: Theme.spacingM
+
+                        DankTextField {
+                            id: manualInput
+                            width: parent.width
+                            placeholderText: "Type or paste text here..."
+                            showClearButton: true
+                            focus: true
+                            Component.onCompleted: {
+                                root.manualInputInput = manualInput;
+                                if (root.currentText !== "") {
+                                    manualInput.text = root.currentText;
+                                }
+                            }
+                            onTextEdited: {
+                                if (text !== "")
+                                    root.generateQR(text);
+                            }
+                            onEditingFinished: {
+                                if (text !== "")
+                                    root.generateQR(text);
+                            }
+                            onTextChanged: {
+                                if (text === "") {
+                                    root.currentText = "";
+                                    root.cacheBuster = "";
+                                }
+                            }
+                        }
+
+                        Row {
+                            width: parent.width
+                            spacing: Theme.spacingS
+                            
+                            DankButton {
+                                text: "Copy Image"
+                                width: (parent.width - Theme.spacingS) / 2
+                                iconName: "content_copy"
+                                backgroundColor: Theme.secondary
+                                enabled: root.cacheBuster !== ""
+                                onClicked: root.copyImageToClipboard()
+                            }
+
+                            DankButton {
+                                text: "Save Image"
+                                width: (parent.width - Theme.spacingS) / 2
+                                iconName: "save"
+                                backgroundColor: Theme.primary
+                                enabled: root.cacheBuster !== ""
+                                onClicked: root.saveImage()
+                            }
+                        }
+                    }
+                    
+                    StyledText {
+                        text: "Hint: Right-click icon to quickly generate from clipboard."
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceVariantText
+                        horizontalAlignment: Text.AlignHCenter
+                        width: parent.width
+                        visible: root.showHints
+                    }
                 }
             }
         }
