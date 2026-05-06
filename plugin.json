@@ -1,0 +1,19 @@
+{
+    "id": "qr-generator",
+    "name": "QR Generator",
+    "description": "Generate QR codes from clipboard or text, with export support",
+    "version": "1.0.0",
+    "license": "GPL-3.0",
+    "author": "Loc Huynh",
+    "icon": "qr_code_2",
+    "type": "widget",
+    "capabilities": ["dankbar-widget"],
+    "component": "./QRWidget.qml",
+    "settings": "./QRSettings.qml",
+    "permissions": [
+        "settings_read",
+        "settings_write",
+        "clipboard_read"
+    ],
+    "screenshot": "https://raw.githubusercontent.com/hthienloc/dms-qr-generator/main/screenshot.png"
+}
