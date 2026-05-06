@@ -281,7 +281,7 @@ PluginComponent {
                     }
                     
                     StyledText {
-                        text: "Hint: [Enter] to copy QR. Right-click bar icon to pull from clipboard."
+                        text: "Hint: Right-click bar icon to pull from clipboard. [Enter] to copy QR."
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         horizontalAlignment: Text.AlignHCenter
