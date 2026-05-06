@@ -20,6 +20,7 @@ PluginComponent {
     property string qrImagePath: "file:///tmp/dms-qr.png"
     property string cacheBuster: ""
     property var manualInputInput: null
+    property var activePopoutReference: null
 
     function clearQR() {
         currentText = "";
@@ -107,9 +108,13 @@ PluginComponent {
                 if (exitCode === 0 && stdout !== "") {
                     root.currentText = stdout;
                     root.generateQR(stdout);
+                    if (root.manualInputInput) root.manualInputInput.text = stdout;
                 }
-                // Open the popout regardless of clipboard success
-                root.triggerPopout();
+                
+                // Only trigger (toggle) if not already visible
+                if (!root.activePopoutReference || !root.activePopoutReference.shouldBeVisible) {
+                    root.triggerPopout();
+                }
             },
             0
         )
@@ -154,11 +159,14 @@ PluginComponent {
             focus: true
 
             property var parentPopout: null
+            onParentPopoutChanged: root.activePopoutReference = parentPopout
 
             Connections {
                 target: parentPopout
                 function onOpened() {
-                    Qt.callLater(() => manualInput.forceActiveFocus());
+                    Qt.callLater(() => {
+                        if (root.manualInputInput) root.manualInputInput.forceActiveFocus();
+                    });
                 }
             }
 
