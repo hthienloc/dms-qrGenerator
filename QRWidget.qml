@@ -249,11 +249,15 @@ PluginComponent {
                     color: Theme.surfaceVariantText
                     horizontalAlignment: Text.AlignHCenter
                     width: parent.width
+                    visible: root.showHints
                 }
             }
         }
     }
 
     popoutWidth: 350
-    popoutHeight: (root.manualInputInput && root.manualInputInput.text !== "") ? 460 : 430
+    popoutHeight: {
+        let h = (root.manualInputInput && root.manualInputInput.text !== "") ? 460 : 430;
+        return root.showHints ? h : h - 30;
+    }
 }

@@ -43,6 +43,13 @@ PluginSettings {
                 defaultValue: true
             }
 
+            ToggleSetting {
+                settingKey: "showHints"
+                label: "Show Accessibility Hints"
+                description: "Display helpful usage tips at the bottom of the popout."
+                defaultValue: true
+            }
+
             SelectionSetting {
                 settingKey: "pillStyle"
                 label: "Bar Display Style"
