@@ -17,14 +17,15 @@ PluginSettings {
         color: Theme.surfaceText
     }
 
+    // --- Generation & Privacy Section (High Priority) ---
     StyledRect {
         width: parent.width
-        height: contentColumn.implicitHeight + Theme.spacingL * 2
+        height: genColumn.implicitHeight + Theme.spacingL * 2
         radius: Theme.cornerRadius
         color: Theme.surfaceContainerHigh
 
         Column {
-            id: contentColumn
+            id: genColumn
             anchors.fill: parent
             anchors.margins: Theme.spacingL
             spacing: Theme.spacingM
@@ -39,34 +40,8 @@ PluginSettings {
             ToggleSetting {
                 settingKey: "clearQrOnClose"
                 label: "Clear QR Code on Close"
-                description: "Automatically clear the text and QR code when you close the popout."
+                description: "Automatically clear the text and QR code when you close the popout for privacy."
                 defaultValue: true
-            }
-
-            ToggleSetting {
-                settingKey: "showHints"
-                label: "Show Accessibility Hints"
-                description: "Display helpful usage tips at the bottom of the popout."
-                defaultValue: true
-            }
-
-            SelectionSetting {
-                settingKey: "pillStyle"
-                label: "Bar Display Style"
-                description: "Choose how the plugin is displayed on the bar."
-                options: [
-                    { label: "Icon Only", value: "icon" },
-                    { label: "Icon + Text", value: "text" }
-                ]
-                defaultValue: "icon"
-            }
-
-            StringSetting {
-                settingKey: "savePath"
-                label: "Save Directory"
-                description: "Where to save exported QR code images."
-                placeholder: "~/Pictures/QRCodes"
-                defaultValue: "~/Pictures/QRCodes"
             }
 
             SelectionSetting {
@@ -83,6 +58,77 @@ PluginSettings {
         }
     }
 
+    // --- Exporting Section (High Priority) ---
+    StyledRect {
+        width: parent.width
+        height: exportColumn.implicitHeight + Theme.spacingL * 2
+        radius: Theme.cornerRadius
+        color: Theme.surfaceContainerHigh
+
+        Column {
+            id: exportColumn
+            anchors.fill: parent
+            anchors.margins: Theme.spacingL
+            spacing: Theme.spacingM
+
+            StyledText {
+                text: "Exporting"
+                font.pixelSize: Theme.fontSizeMedium
+                font.weight: Font.Medium
+                color: Theme.surfaceText
+            }
+
+            StringSetting {
+                settingKey: "savePath"
+                label: "Save Directory"
+                description: "Where to save exported QR code images."
+                placeholder: "~/Pictures/QRCodes"
+                defaultValue: "~/Pictures/QRCodes"
+            }
+        }
+    }
+
+    // --- Display & UI Section (Lower Priority) ---
+    StyledRect {
+        width: parent.width
+        height: displayColumn.implicitHeight + Theme.spacingL * 2
+        radius: Theme.cornerRadius
+        color: Theme.surfaceContainerHigh
+
+        Column {
+            id: displayColumn
+            anchors.fill: parent
+            anchors.margins: Theme.spacingL
+            spacing: Theme.spacingM
+
+            StyledText {
+                text: "Display & UI"
+                font.pixelSize: Theme.fontSizeMedium
+                font.weight: Font.Medium
+                color: Theme.surfaceText
+            }
+
+            SelectionSetting {
+                settingKey: "pillStyle"
+                label: "Bar Display Style"
+                description: "Choose how the plugin is displayed on the bar."
+                options: [
+                    { label: "Icon Only", value: "icon" },
+                    { label: "Icon + Text", value: "text" }
+                ]
+                defaultValue: "icon"
+            }
+
+            ToggleSetting {
+                settingKey: "showHints"
+                label: "Show Accessibility Hints"
+                description: "Display helpful usage tips at the bottom of the popout."
+                defaultValue: true
+            }
+        }
+    }
+
+    // --- Requirements Section ---
     StyledRect {
         width: parent.width
         height: requirementsColumn.implicitHeight + Theme.spacingL * 2

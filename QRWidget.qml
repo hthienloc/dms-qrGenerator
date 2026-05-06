@@ -14,6 +14,7 @@ PluginComponent {
     readonly property string pillStyle: pluginData.pillStyle || "icon"
     readonly property string savePath: pluginData.savePath || "~/Pictures/QRCodes"
     readonly property string qrSize: pluginData.qrSize || "6"
+    readonly property bool showHints: pluginData.showHints ?? true
     
     property string currentText: ""
     property string qrImagePath: "file:///tmp/dms-qr.png"
