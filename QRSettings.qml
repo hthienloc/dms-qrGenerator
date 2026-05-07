@@ -7,7 +7,7 @@ import qs.Modules.Plugins
 
 PluginSettings {
     id: root
-    pluginId: "qr-generator"
+    pluginId: "qrGenerator"
 
     StyledText {
         width: parent.width
