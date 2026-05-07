@@ -29,6 +29,7 @@ sudo pacman -S qrencode wl-clipboard xclip
 
 ## Features
 
+- **Wi-Fi Sharing**: Instantly share your current Wi-Fi connection. One click fetches your active SSID and Password (using `nmcli`) and generates a standard Wi-Fi QR code for guests.
 - **Real-time Generation**: QR code updates instantly as you type.
 - **Clipboard Integration**:
     - **From Clipboard**: Quickly generate a QR code from your current clipboard content.

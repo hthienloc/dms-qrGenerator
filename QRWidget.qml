@@ -99,6 +99,36 @@ PluginComponent {
         )
     }
 
+    function fetchWifiAndGenerateQR() {
+        const cmd = "SSID=$(nmcli -t -f active,ssid dev wifi | grep '^yes' | cut -d: -f2 | head -n 1); " +
+                    "if [ -n \"$SSID\" ]; then " +
+                    "SEC=$(nmcli -t -f SSID,SECURITY device wifi | grep \"^$SSID:\" | cut -d: -f2 | head -n 1); " +
+                    "PWD=$(nmcli -s -g 802-11-wireless-security.psk connection show \"$SSID\"); " +
+                    "SEC_TYPE=\"WPA\"; " +
+                    "if echo \"$SEC\" | grep -iq \"WEP\"; then SEC_TYPE=\"WEP\"; fi; " +
+                    "if [ -z \"$SEC\" ] || [ \"$SEC\" = \"--\" ]; then SEC_TYPE=\"nopass\"; fi; " +
+                    "if [ -z \"$PWD\" ]; then SEC_TYPE=\"nopass\"; fi; " +
+                    "echo \"WIFI:S:$SSID;T:$SEC_TYPE;P:$PWD;;\"; " +
+                    "else echo \"NO_WIFI\"; fi";
+
+        Proc.runCommand(
+            "fetch-wifi",
+            ["sh", "-c", cmd],
+            (stdout, exitCode) => {
+                const result = stdout.trim();
+                if (exitCode === 0 && result !== "NO_WIFI") {
+                    root.currentText = result;
+                    if (root.manualInputInput) root.manualInputInput.text = result;
+                    root.generateQR(result);
+                    ToastService.showInfo("Wi-Fi info fetched!");
+                } else {
+                    ToastService.showError("Could not find active Wi-Fi connection.");
+                }
+            },
+            0
+        )
+    }
+
     pillRightClickAction: () => {
         // Fetch clipboard and generate QR before opening popout
         Proc.runCommand(
@@ -278,6 +308,14 @@ PluginComponent {
                                 onClicked: root.saveImage()
                             }
                         }
+
+                        DankButton {
+                            text: "Share Current Wi-Fi"
+                            width: parent.width
+                            iconName: "wifi"
+                            backgroundColor: Theme.primary
+                            onClicked: root.fetchWifiAndGenerateQR()
+                        }
                     }
                     
                     StyledText {
@@ -294,7 +332,7 @@ PluginComponent {
 
     popoutWidth: 350
     popoutHeight: {
-        let h = (root.manualInputInput && root.manualInputInput.text !== "") ? 460 : 430;
+        let h = (root.manualInputInput && root.manualInputInput.text !== "") ? 500 : 470;
         return root.showHints ? h : h - 30;
     }
 }
