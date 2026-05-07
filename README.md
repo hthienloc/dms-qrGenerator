@@ -2,7 +2,7 @@
 
 A dedicated QR code generator plugin for [Dank Material Shell](https://github.com/AvengeMedia/DankMaterialShell).
 
-![Screenshot](screenshot.png)
+<img src="screenshot.png" width="400" alt="Screenshot">
 
 ## Installation
 
