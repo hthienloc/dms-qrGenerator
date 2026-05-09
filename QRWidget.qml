@@ -249,6 +249,7 @@ PluginComponent {
                 headerText: "QR Generator"
                 detailsText: ""
                 showCloseButton: true
+                onCloseClicked: root.popout = false
 
                 Component.onDestruction: {
                     if (root.clearQrOnClose) {
