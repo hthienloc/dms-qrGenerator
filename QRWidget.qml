@@ -136,6 +136,18 @@ PluginComponent {
             ["sh", "-c", "wl-paste --no-newline || xclip -selection clipboard -o"],
             (stdout, exitCode) => {
                 if (exitCode === 0 && stdout !== "") {
+                    // Basic validation to avoid binary data (like image data)
+                    // Check for null bytes or common binary headers
+                    const isBinary = stdout.includes("\0") || 
+                                   stdout.startsWith("\x89PNG") || 
+                                   stdout.startsWith("\xff\xd8") ||
+                                   stdout.startsWith("GIF8");
+                    
+                    if (isBinary) {
+                        ToastService.showWarning("Clipboard contains binary data, not text.");
+                        return;
+                    }
+
                     root.currentText = stdout;
                     root.generateQR(stdout);
                     if (root.manualInputInput) root.manualInputInput.text = stdout;
