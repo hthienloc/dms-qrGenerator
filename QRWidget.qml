@@ -225,31 +225,25 @@ PluginComponent {
     }
 
     popoutContent: Component {
-        FocusScope {
-            id: contentFocusScope
-            width: parent ? parent.width : 0
-            implicitHeight: mainContent.implicitHeight
-            focus: true
-
-            property var parentPopout: null
-            onParentPopoutChanged: root.activePopoutReference = parentPopout
-
-            Connections {
-                target: parentPopout
-                function onOpened() {
-                    Qt.callLater(() => {
-                        if (root.manualInputInput) root.manualInputInput.forceActiveFocus();
-                    });
-                }
-            }
-
             PopoutComponent {
                 id: mainContent
-                width: parent.width
+                width: parent ? parent.width : 0
                 headerText: "QR Generator"
                 detailsText: ""
                 showCloseButton: true
-                onCloseClicked: root.popout = false
+                focus: true
+
+                property var parentPopout: null
+                onParentPopoutChanged: root.activePopoutReference = parentPopout
+
+                Connections {
+                    target: parentPopout
+                    function onOpened() {
+                        Qt.callLater(() => {
+                            if (root.manualInputInput) root.manualInputInput.forceActiveFocus();
+                        });
+                    }
+                }
 
                 Component.onDestruction: {
                     if (root.clearQrOnClose) {
