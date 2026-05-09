@@ -17,29 +17,36 @@ PluginComponent {
     readonly property bool showHints: pluginData.showHints ?? true
     
     property string currentText: ""
-    property string qrImagePath: "file:///tmp/dms-qr.png"
-    property string cacheBuster: ""
     property bool isFetchingWifi: false
     property var manualInputInput: null
     property var activePopoutReference: null
 
+    // Dual-buffering to prevent flickering
+    property bool useImageA: true
+    property string pathA: "/tmp/dms-qr-a.png"
+    property string pathB: "/tmp/dms-qr-b.png"
+    property string sourceA: ""
+    property string sourceB: ""
+
     Timer {
         id: debounceTimer
-        interval: 250 // ms
+        interval: 200
         repeat: false
         onTriggered: root.generateQRInternal(root.currentText)
     }
 
     function clearQR() {
         currentText = "";
-        cacheBuster = "";
+        sourceA = "";
+        sourceB = "";
         if (manualInputInput) manualInputInput.text = "";
     }
 
     function generateQR(text) {
-        if (!text) {
+        if (!text || text.trim() === "") {
             currentText = "";
-            cacheBuster = "";
+            sourceA = "";
+            sourceB = "";
             return;
         }
         currentText = text;
@@ -51,15 +58,20 @@ PluginComponent {
         const trimmed = text.trim();
         if (trimmed === "") return;
         
-        // Use qrencode to generate the image
+        // Generate to the "inactive" path
+        const targetPath = root.useImageA ? root.pathB : root.pathA;
+        
         Proc.runCommand(
             "generate-qr",
-            ["qrencode", "-s", root.qrSize, "-o", "/tmp/dms-qr.png", trimmed],
+            ["qrencode", "-s", root.qrSize, "-o", targetPath, trimmed],
             (stdout, exitCode) => {
                 if (exitCode === 0) {
-                    cacheBuster = Date.now().toString();
-                } else {
-                    console.error("Failed to generate QR, exit code:", exitCode);
+                    const newSource = "file://" + targetPath + "?t=" + Date.now();
+                    if (root.useImageA) {
+                        root.sourceB = newSource;
+                    } else {
+                        root.sourceA = newSource;
+                    }
                 }
             },
             0
@@ -67,13 +79,13 @@ PluginComponent {
     }
 
     function saveImage() {
-        if (!root.cacheBuster) return;
+        const activePath = root.useImageA ? root.pathA : root.pathB;
+        if ((root.useImageA && !root.sourceA) || (!root.useImageA && !root.sourceB)) return;
         
-        // Use a standardized filename: qr_YYYY-MM-DD_HHMMSS.png
         const cmd = "DIR=\"" + root.savePath + "\"; " +
                     "mkdir -p \"$DIR\"; " +
                     "FILENAME=\"qr_$(date +%Y-%m-%d_%H%M%S).png\"; " +
-                    "cp /tmp/dms-qr.png \"$DIR/$FILENAME\"";
+                    "cp " + activePath + " \"$DIR/$FILENAME\"";
         
         Proc.runCommand(
             "export-qr",
@@ -90,11 +102,12 @@ PluginComponent {
     }
 
     function copyImageToClipboard() {
-        if (!root.cacheBuster) return;
+        const activePath = root.useImageA ? root.pathA : root.pathB;
+        if ((root.useImageA && !root.sourceA) || (!root.useImageA && !root.sourceB)) return;
         
         Proc.runCommand(
             "copy-qr-image",
-            ["sh", "-c", "wl-copy < /tmp/dms-qr.png || xclip -selection clipboard -t image/png -i /tmp/dms-qr.png"],
+            ["sh", "-c", "wl-copy < " + activePath + " || xclip -selection clipboard -t image/png -i " + activePath],
             (stdout, exitCode) => {
                 if (exitCode === 0) {
                     ToastService.showInfo("QR Image copied to clipboard!");
@@ -319,15 +332,37 @@ PluginComponent {
                         border.color: Theme.surfaceContainerHighest
                         
                         Image {
-                            id: qrImage
+                            id: qrImageA
                             anchors.fill: parent
                             anchors.margins: 16
-                            source: root.cacheBuster ? root.qrImagePath + "?t=" + root.cacheBuster : ""
+                            source: root.sourceA
                             fillMode: Image.PreserveAspectFit
-                            visible: root.cacheBuster !== "" && !root.isFetchingWifi
                             asynchronous: true
-                            opacity: status === Image.Ready ? 1 : 0
-                            Behavior on opacity { NumberAnimation { duration: 200 } }
+                            opacity: root.useImageA ? 1 : 0
+                            visible: opacity > 0 && !root.isFetchingWifi
+                            Behavior on opacity { NumberAnimation { duration: 150 } }
+                            onStatusChanged: {
+                                if (status === Image.Ready && !root.useImageA) {
+                                    root.useImageA = true;
+                                }
+                            }
+                        }
+
+                        Image {
+                            id: qrImageB
+                            anchors.fill: parent
+                            anchors.margins: 16
+                            source: root.sourceB
+                            fillMode: Image.PreserveAspectFit
+                            asynchronous: true
+                            opacity: !root.useImageA ? 1 : 0
+                            visible: opacity > 0 && !root.isFetchingWifi
+                            Behavior on opacity { NumberAnimation { duration: 150 } }
+                            onStatusChanged: {
+                                if (status === Image.Ready && root.useImageA) {
+                                    root.useImageA = false;
+                                }
+                            }
                         }
 
                         // Spinner during Wi-Fi fetch
@@ -349,7 +384,7 @@ PluginComponent {
                             anchors.centerIn: parent
                             text: "Ready to generate"
                             color: Theme.surfaceVariantText
-                            visible: root.cacheBuster === "" && !root.isFetchingWifi
+                            visible: root.sourceA === "" && root.sourceB === "" && !root.isFetchingWifi
                             font.pixelSize: Theme.fontSizeSmall
                             opacity: 0.7
                         }
