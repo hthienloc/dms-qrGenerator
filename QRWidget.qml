@@ -379,13 +379,25 @@ PluginComponent {
                             }
                         }
 
-                        StyledText {
+                        Column {
                             anchors.centerIn: parent
-                            text: "Ready to generate"
-                            color: Theme.surfaceVariantText
+                            spacing: Theme.spacingS
                             visible: root.sourceA === "" && root.sourceB === "" && !root.isFetchingWifi
-                            font.pixelSize: Theme.fontSizeSmall
-                            opacity: 0.7
+                            opacity: 0.5
+
+                            DankIcon {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                name: "qr_code_2"
+                                size: 48
+                                color: Theme.onSurfaceVariant
+                            }
+
+                            StyledText {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "Ready to generate"
+                                color: Theme.onSurfaceVariant
+                                font.pixelSize: Theme.fontSizeSmall
+                            }
                         }
                     }
 
