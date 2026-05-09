@@ -323,9 +323,8 @@ PluginComponent {
 
                     // 2. QR Display Area (The Result)
                     StyledRect {
-                        width: 240
-                        height: 240
-                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: parent.width
+                        height: width
                         color: "white"
                         radius: Theme.cornerRadius
                         border.width: 1
