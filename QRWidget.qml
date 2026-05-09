@@ -8,7 +8,7 @@ import qs.Widgets
 import qs.Modules.Plugins
 
 PluginComponent {
-    id: root
+    id: pluginRoot
 
     readonly property bool clearQrOnClose: pluginData.clearQrOnClose ?? true
     readonly property string pillStyle: pluginData.pillStyle || "icon"
@@ -20,6 +20,7 @@ PluginComponent {
     property bool isFetchingWifi: false
     property var manualInputInput: null
     property var activePopoutReference: null
+    property bool hasResult: false
 
     // Dual-buffering to prevent flickering
     property bool useImageA: true
@@ -32,13 +33,14 @@ PluginComponent {
         id: debounceTimer
         interval: 200
         repeat: false
-        onTriggered: root.generateQRInternal(root.currentText)
+        onTriggered: pluginRoot.generateQRInternal(pluginRoot.currentText)
     }
 
     function clearQR() {
         currentText = "";
         sourceA = "";
         sourceB = "";
+        hasResult = false;
         if (manualInputInput) manualInputInput.text = "";
     }
 
@@ -47,6 +49,7 @@ PluginComponent {
             currentText = "";
             sourceA = "";
             sourceB = "";
+            hasResult = false;
             return;
         }
         currentText = text;
@@ -59,19 +62,20 @@ PluginComponent {
         if (trimmed === "") return;
         
         // Generate to the "inactive" path
-        const targetPath = root.useImageA ? root.pathB : root.pathA;
+        const targetPath = pluginRoot.useImageA ? pluginRoot.pathB : pluginRoot.pathA;
         
         Proc.runCommand(
             "generate-qr",
-            ["qrencode", "-s", root.qrSize, "-o", targetPath, trimmed],
+            ["qrencode", "-s", pluginRoot.qrSize, "-o", targetPath, trimmed],
             (stdout, exitCode) => {
                 if (exitCode === 0) {
                     const newSource = "file://" + targetPath + "?t=" + Date.now();
-                    if (root.useImageA) {
-                        root.sourceB = newSource;
+                    if (pluginRoot.useImageA) {
+                        pluginRoot.sourceB = newSource;
                     } else {
-                        root.sourceA = newSource;
+                        pluginRoot.sourceA = newSource;
                     }
+                    pluginRoot.hasResult = true;
                 }
             },
             0
@@ -79,10 +83,10 @@ PluginComponent {
     }
 
     function saveImage() {
-        const activePath = root.useImageA ? root.pathA : root.pathB;
-        if ((root.useImageA && !root.sourceA) || (!root.useImageA && !root.sourceB)) return;
+        const activePath = pluginRoot.useImageA ? pluginRoot.pathA : pluginRoot.pathB;
+        if ((pluginRoot.useImageA && !pluginRoot.sourceA) || (!pluginRoot.useImageA && !pluginRoot.sourceB)) return;
         
-        const cmd = "DIR=\"" + root.savePath + "\"; " +
+        const cmd = "DIR=\"" + pluginRoot.savePath + "\"; " +
                     "mkdir -p \"$DIR\"; " +
                     "FILENAME=\"qr_$(date +%Y-%m-%d_%H%M%S).png\"; " +
                     "cp " + activePath + " \"$DIR/$FILENAME\"";
@@ -92,7 +96,7 @@ PluginComponent {
             ["sh", "-c", cmd],
             (stdout, exitCode) => {
                 if (exitCode === 0) {
-                    ToastService.showInfo("Saved to " + root.savePath);
+                    ToastService.showInfo("Saved to " + pluginRoot.savePath);
                 } else {
                     ToastService.showError("Failed to save image.");
                 }
@@ -102,8 +106,8 @@ PluginComponent {
     }
 
     function copyImageToClipboard() {
-        const activePath = root.useImageA ? root.pathA : root.pathB;
-        if ((root.useImageA && !root.sourceA) || (!root.useImageA && !root.sourceB)) return;
+        const activePath = pluginRoot.useImageA ? pluginRoot.pathA : pluginRoot.pathB;
+        if ((pluginRoot.useImageA && !pluginRoot.sourceA) || (!pluginRoot.useImageA && !pluginRoot.sourceB)) return;
         
         Proc.runCommand(
             "copy-qr-image",
@@ -132,7 +136,7 @@ PluginComponent {
     }
 
     function fetchWifiAndGenerateQR() {
-        root.isFetchingWifi = true;
+        pluginRoot.isFetchingWifi = true;
         const cmd = "SSID=$(nmcli -t -f active,ssid dev wifi | grep '^yes' | cut -d: -f2 | head -n 1); " +
                     "if [ -n \"$SSID\" ]; then " +
                     "SEC=$(nmcli -t -f SSID,SECURITY device wifi | grep \"^$SSID:\" | cut -d: -f2 | head -n 1); " +
@@ -148,12 +152,12 @@ PluginComponent {
             "fetch-wifi",
             ["sh", "-c", cmd],
             (stdout, exitCode) => {
-                root.isFetchingWifi = false;
+                pluginRoot.isFetchingWifi = false;
                 const result = stdout.trim();
                 if (exitCode === 0 && result !== "NO_WIFI") {
-                    root.currentText = result;
-                    if (root.manualInputInput) root.manualInputInput.text = result;
-                    root.generateQR(result);
+                    pluginRoot.currentText = result;
+                    if (pluginRoot.manualInputInput) pluginRoot.manualInputInput.text = result;
+                    pluginRoot.generateQR(result);
                 }
             },
             0
@@ -168,7 +172,6 @@ PluginComponent {
             (stdout, exitCode) => {
                 if (exitCode === 0 && stdout !== "") {
                     // Basic validation to avoid binary data (like image data)
-                    // Check for null bytes or common binary headers
                     const isBinary = stdout.includes("\0") || 
                                    stdout.startsWith("\x89PNG") || 
                                    stdout.startsWith("\xff\xd8") ||
@@ -179,14 +182,14 @@ PluginComponent {
                         return;
                     }
 
-                    root.currentText = stdout;
-                    root.generateQR(stdout);
-                    if (root.manualInputInput) root.manualInputInput.text = stdout;
+                    pluginRoot.currentText = stdout;
+                    pluginRoot.generateQR(stdout);
+                    if (pluginRoot.manualInputInput) pluginRoot.manualInputInput.text = stdout;
                 }
                 
                 // Only trigger (toggle) if not already visible
-                if (!root.activePopoutReference || !root.activePopoutReference.shouldBeVisible) {
-                    root.triggerPopout();
+                if (!pluginRoot.activePopoutReference || !pluginRoot.activePopoutReference.shouldBeVisible) {
+                    pluginRoot.triggerPopout();
                 }
             },
             0
@@ -199,15 +202,15 @@ PluginComponent {
             DankIcon {
                 name: "qr_code_2"
                 size: Theme.iconSizeSmall
-                color: root.cacheBuster !== "" ? Theme.primary : Theme.surfaceText
+                color: pluginRoot.hasResult ? Theme.primary : Theme.surfaceText
                 anchors.verticalCenter: parent.verticalCenter
             }
             StyledText {
                 text: "QR"
                 font.pixelSize: Theme.fontSizeMedium
-                color: root.cacheBuster !== "" ? Theme.primary : Theme.surfaceText
+                color: pluginRoot.hasResult ? Theme.primary : Theme.surfaceText
                 anchors.verticalCenter: parent.verticalCenter
-                visible: root.pillStyle === "text"
+                visible: pluginRoot.pillStyle === "text"
             }
         }
     }
@@ -218,7 +221,7 @@ PluginComponent {
             DankIcon {
                 name: "qr_code_2"
                 size: Theme.iconSizeSmall
-                color: root.cacheBuster !== "" ? Theme.primary : Theme.surfaceText
+                color: pluginRoot.hasResult ? Theme.primary : Theme.surfaceText
                 anchors.horizontalCenter: parent.horizontalCenter
             }
         }
@@ -234,20 +237,20 @@ PluginComponent {
                 focus: true
 
                 property var parentPopout: null
-                onParentPopoutChanged: root.activePopoutReference = parentPopout
+                onParentPopoutChanged: pluginRoot.activePopoutReference = parentPopout
 
                 Connections {
                     target: parentPopout
                     function onOpened() {
                         Qt.callLater(() => {
-                            if (root.manualInputInput) root.manualInputInput.forceActiveFocus();
+                            if (pluginRoot.manualInputInput) pluginRoot.manualInputInput.forceActiveFocus();
                         });
                     }
                 }
 
                 Component.onDestruction: {
-                    if (root.clearQrOnClose) {
-                        root.clearQR();
+                    if (pluginRoot.clearQrOnClose) {
+                        pluginRoot.clearQR();
                     }
                 }
 
@@ -258,8 +261,8 @@ PluginComponent {
 
                     Keys.onPressed: (event) => {
                         if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                            if (root.cacheBuster !== "") {
-                                root.copyImageToClipboard();
+                            if (pluginRoot.hasResult) {
+                                pluginRoot.copyImageToClipboard();
                             }
                             event.accepted = true;
                         }
@@ -277,42 +280,30 @@ PluginComponent {
                             showClearButton: true
                             focus: true
                             Component.onCompleted: {
-                                root.manualInputInput = manualInput;
-                                if (root.currentText !== "") {
-                                    manualInput.text = root.currentText;
+                                pluginRoot.manualInputInput = manualInput;
+                                if (pluginRoot.currentText !== "") {
+                                    manualInput.text = pluginRoot.currentText;
                                 }
                             }
-                            onTextEdited: root.generateQR(text)
-                            onEditingFinished: root.generateQR(text)
+                            onTextEdited: pluginRoot.generateQR(text)
+                            onEditingFinished: pluginRoot.generateQR(text)
                             onTextChanged: {
                                 if (text === "") {
                                     debounceTimer.stop();
-                                    root.currentText = "";
-                                    root.cacheBuster = "";
+                                    pluginRoot.currentText = "";
+                                    pluginRoot.hasResult = false;
                                 }
                             }
                         }
 
                         DankButton {
                             id: wifiButton
-                            text: root.isFetchingWifi ? "Fetching Wi-Fi..." : "Share Current Wi-Fi"
+                            text: pluginRoot.isFetchingWifi ? "Fetching Wi-Fi..." : "Share Current Wi-Fi"
                             width: parent.width
-                            iconName: root.isFetchingWifi ? "sync" : "wifi"
+                            iconName: pluginRoot.isFetchingWifi ? "sync" : "wifi"
                             backgroundColor: Theme.secondary
-                            enabled: !root.isFetchingWifi
-                            onClicked: root.fetchWifiAndGenerateQR()
-
-                            // Rotation animation for the sync icon
-                            RotationAnimation on iconName {
-                                running: root.isFetchingWifi
-                                from: 0; to: 360; duration: 1000
-                                loops: Animation.Infinite
-                                // Note: We can't actually animate the iconName property of DankButton 
-                                // because it's a string, not the icon's rotation.
-                                // Instead, we'll use a custom icon overlay if needed, 
-                                // but for now let's use a simpler approach: 
-                                // changing the text and icon is already good feedback.
-                            }
+                            enabled: !pluginRoot.isFetchingWifi
+                            onClicked: pluginRoot.fetchWifiAndGenerateQR()
                         }
                     }
 
@@ -329,15 +320,15 @@ PluginComponent {
                             id: qrImageA
                             anchors.fill: parent
                             anchors.margins: 16
-                            source: root.sourceA
+                            source: pluginRoot.sourceA
                             fillMode: Image.PreserveAspectFit
                             asynchronous: true
-                            opacity: root.useImageA ? 1 : 0
-                            visible: opacity > 0 && !root.isFetchingWifi
+                            opacity: pluginRoot.useImageA ? 1 : 0
+                            visible: opacity > 0 && !pluginRoot.isFetchingWifi
                             Behavior on opacity { NumberAnimation { duration: 150 } }
                             onStatusChanged: {
-                                if (status === Image.Ready && !root.useImageA) {
-                                    root.useImageA = true;
+                                if (status === Image.Ready && !pluginRoot.useImageA) {
+                                    pluginRoot.useImageA = true;
                                 }
                             }
                         }
@@ -346,15 +337,15 @@ PluginComponent {
                             id: qrImageB
                             anchors.fill: parent
                             anchors.margins: 16
-                            source: root.sourceB
+                            source: pluginRoot.sourceB
                             fillMode: Image.PreserveAspectFit
                             asynchronous: true
-                            opacity: !root.useImageA ? 1 : 0
-                            visible: opacity > 0 && !root.isFetchingWifi
+                            opacity: !pluginRoot.useImageA ? 1 : 0
+                            visible: opacity > 0 && !pluginRoot.isFetchingWifi
                             Behavior on opacity { NumberAnimation { duration: 150 } }
                             onStatusChanged: {
-                                if (status === Image.Ready && root.useImageA) {
-                                    root.useImageA = false;
+                                if (status === Image.Ready && pluginRoot.useImageA) {
+                                    pluginRoot.useImageA = false;
                                 }
                             }
                         }
@@ -365,10 +356,10 @@ PluginComponent {
                             name: "sync"
                             size: 48
                             color: Theme.primary
-                            visible: root.isFetchingWifi
+                            visible: pluginRoot.isFetchingWifi
                             
                             RotationAnimation on rotation {
-                                running: root.isFetchingWifi
+                                running: pluginRoot.isFetchingWifi
                                 from: 0; to: 360; duration: 1000
                                 loops: Animation.Infinite
                             }
@@ -377,7 +368,7 @@ PluginComponent {
                         Column {
                             anchors.centerIn: parent
                             spacing: Theme.spacingS
-                            visible: root.sourceA === "" && root.sourceB === "" && !root.isFetchingWifi
+                            visible: pluginRoot.sourceA === "" && pluginRoot.sourceB === "" && !pluginRoot.isFetchingWifi
                             opacity: 0.5
 
                             DankIcon {
@@ -400,7 +391,7 @@ PluginComponent {
                     Column {
                         width: parent.width
                         spacing: Theme.spacingM
-                        visible: root.cacheBuster !== ""
+                        visible: pluginRoot.hasResult
 
                         Row {
                             width: parent.width
@@ -411,8 +402,8 @@ PluginComponent {
                                 width: (parent.width - Theme.spacingS) / 2
                                 iconName: "content_copy"
                                 backgroundColor: Theme.primary
-                                enabled: root.cacheBuster !== ""
-                                onClicked: root.copyImageToClipboard()
+                                enabled: pluginRoot.hasResult
+                                onClicked: pluginRoot.copyImageToClipboard()
                             }
 
                             DankButton {
@@ -421,8 +412,8 @@ PluginComponent {
                                 iconName: "save"
                                 backgroundColor: Theme.surfaceContainerHighest
                                 textColor: Theme.surfaceText
-                                enabled: root.cacheBuster !== ""
-                                onClicked: root.saveImage()
+                                enabled: pluginRoot.hasResult
+                                onClicked: pluginRoot.saveImage()
                             }
                         }
                     }
@@ -433,7 +424,7 @@ PluginComponent {
                         color: Theme.surfaceVariantText
                         horizontalAlignment: Text.AlignHCenter
                         width: parent.width
-                        visible: root.showHints
+                        visible: pluginRoot.showHints
                         wrapMode: Text.WordWrap
                     }
                 }
@@ -442,7 +433,7 @@ PluginComponent {
 
     popoutWidth: 350
     popoutHeight: {
-        let h = (root.cacheBuster !== "") ? 560 : 480;
-        return root.showHints ? h : h - 40;
+        let h = (pluginRoot.hasResult) ? 560 : 480;
+        return pluginRoot.showHints ? h : h - 40;
     }
 }
