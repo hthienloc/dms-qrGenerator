@@ -23,6 +23,13 @@ PluginComponent {
     property var manualInputInput: null
     property var activePopoutReference: null
 
+    Timer {
+        id: debounceTimer
+        interval: 250 // ms
+        repeat: false
+        onTriggered: root.generateQRInternal(root.currentText)
+    }
+
     function clearQR() {
         currentText = "";
         cacheBuster = "";
@@ -30,13 +37,24 @@ PluginComponent {
     }
 
     function generateQR(text) {
+        if (!text) {
+            currentText = "";
+            cacheBuster = "";
+            return;
+        }
+        currentText = text;
+        debounceTimer.restart();
+    }
+
+    function generateQRInternal(text) {
         if (!text) return;
-        currentText = text.trim();
+        const trimmed = text.trim();
+        if (trimmed === "") return;
         
         // Use qrencode to generate the image
         Proc.runCommand(
             "generate-qr",
-            ["qrencode", "-s", root.qrSize, "-o", "/tmp/dms-qr.png", currentText],
+            ["qrencode", "-s", root.qrSize, "-o", "/tmp/dms-qr.png", trimmed],
             (stdout, exitCode) => {
                 if (exitCode === 0) {
                     cacheBuster = Date.now().toString();
@@ -256,16 +274,11 @@ PluginComponent {
                                     manualInput.text = root.currentText;
                                 }
                             }
-                            onTextEdited: {
-                                if (text !== "")
-                                    root.generateQR(text);
-                            }
-                            onEditingFinished: {
-                                if (text !== "")
-                                    root.generateQR(text);
-                            }
+                            onTextEdited: root.generateQR(text)
+                            onEditingFinished: root.generateQR(text)
                             onTextChanged: {
                                 if (text === "") {
+                                    debounceTimer.stop();
                                     root.currentText = "";
                                     root.cacheBuster = "";
                                 }
