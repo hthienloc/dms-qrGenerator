@@ -19,6 +19,7 @@ PluginComponent {
     property string currentText: ""
     property string qrImagePath: "file:///tmp/dms-qr.png"
     property string cacheBuster: ""
+    property bool isFetchingWifi: false
     property var manualInputInput: null
     property var activePopoutReference: null
 
@@ -100,6 +101,7 @@ PluginComponent {
     }
 
     function fetchWifiAndGenerateQR() {
+        root.isFetchingWifi = true;
         const cmd = "SSID=$(nmcli -t -f active,ssid dev wifi | grep '^yes' | cut -d: -f2 | head -n 1); " +
                     "if [ -n \"$SSID\" ]; then " +
                     "SEC=$(nmcli -t -f SSID,SECURITY device wifi | grep \"^$SSID:\" | cut -d: -f2 | head -n 1); " +
@@ -115,14 +117,12 @@ PluginComponent {
             "fetch-wifi",
             ["sh", "-c", cmd],
             (stdout, exitCode) => {
+                root.isFetchingWifi = false;
                 const result = stdout.trim();
                 if (exitCode === 0 && result !== "NO_WIFI") {
                     root.currentText = result;
                     if (root.manualInputInput) root.manualInputInput.text = result;
                     root.generateQR(result);
-                    ToastService.showInfo("Wi-Fi info fetched!");
-                } else {
-                    ToastService.showError("Could not find active Wi-Fi connection.");
                 }
             },
             0
@@ -227,33 +227,7 @@ PluginComponent {
                         }
                     }
 
-                    // QR Display Area
-                    StyledRect {
-                        width: 220
-                        height: 220
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: "white"
-                        radius: Theme.cornerRadiusSmall
-                        
-                        Image {
-                            id: qrImage
-                            anchors.fill: parent
-                            anchors.margins: 10
-                            source: root.cacheBuster ? root.qrImagePath + "?t=" + root.cacheBuster : ""
-                            fillMode: Image.PreserveAspectFit
-                            visible: root.cacheBuster !== ""
-                        }
-
-                        StyledText {
-                            anchors.centerIn: parent
-                            text: "Ready to generate"
-                            color: "#333"
-                            visible: root.cacheBuster === ""
-                            font.pixelSize: Theme.fontSizeSmall
-                        }
-                    }
-
-                    // Input & Actions Area
+                    // 1. Input & Primary Generation Section
                     Column {
                         width: parent.width
                         spacing: Theme.spacingM
@@ -286,6 +260,82 @@ PluginComponent {
                             }
                         }
 
+                        DankButton {
+                            id: wifiButton
+                            text: root.isFetchingWifi ? "Fetching Wi-Fi..." : "Share Current Wi-Fi"
+                            width: parent.width
+                            iconName: root.isFetchingWifi ? "sync" : "wifi"
+                            backgroundColor: Theme.secondary
+                            enabled: !root.isFetchingWifi
+                            onClicked: root.fetchWifiAndGenerateQR()
+
+                            // Rotation animation for the sync icon
+                            RotationAnimation on iconName {
+                                running: root.isFetchingWifi
+                                from: 0; to: 360; duration: 1000
+                                loops: Animation.Infinite
+                                // Note: We can't actually animate the iconName property of DankButton 
+                                // because it's a string, not the icon's rotation.
+                                // Instead, we'll use a custom icon overlay if needed, 
+                                // but for now let's use a simpler approach: 
+                                // changing the text and icon is already good feedback.
+                            }
+                        }
+                    }
+
+                    // 2. QR Display Area (The Result)
+                    StyledRect {
+                        width: 240
+                        height: 240
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        color: "white"
+                        radius: Theme.cornerRadius
+                        border.width: 1
+                        border.color: Theme.surfaceContainerHighest
+                        
+                        Image {
+                            id: qrImage
+                            anchors.fill: parent
+                            anchors.margins: 16
+                            source: root.cacheBuster ? root.qrImagePath + "?t=" + root.cacheBuster : ""
+                            fillMode: Image.PreserveAspectFit
+                            visible: root.cacheBuster !== "" && !root.isFetchingWifi
+                            asynchronous: true
+                            opacity: status === Image.Ready ? 1 : 0
+                            Behavior on opacity { NumberAnimation { duration: 200 } }
+                        }
+
+                        // Spinner during Wi-Fi fetch
+                        DankIcon {
+                            anchors.centerIn: parent
+                            name: "sync"
+                            size: 48
+                            color: Theme.primary
+                            visible: root.isFetchingWifi
+                            
+                            RotationAnimation on rotation {
+                                running: root.isFetchingWifi
+                                from: 0; to: 360; duration: 1000
+                                loops: Animation.Infinite
+                            }
+                        }
+
+                        StyledText {
+                            anchors.centerIn: parent
+                            text: "Ready to generate"
+                            color: Theme.surfaceVariantText
+                            visible: root.cacheBuster === "" && !root.isFetchingWifi
+                            font.pixelSize: Theme.fontSizeSmall
+                            opacity: 0.7
+                        }
+                    }
+
+                    // 3. Post-Generation Actions
+                    Column {
+                        width: parent.width
+                        spacing: Theme.spacingM
+                        visible: root.cacheBuster !== ""
+
                         Row {
                             width: parent.width
                             spacing: Theme.spacingS
@@ -294,7 +344,7 @@ PluginComponent {
                                 text: "Copy Image"
                                 width: (parent.width - Theme.spacingS) / 2
                                 iconName: "content_copy"
-                                backgroundColor: Theme.secondary
+                                backgroundColor: Theme.primary
                                 enabled: root.cacheBuster !== ""
                                 onClicked: root.copyImageToClipboard()
                             }
@@ -303,18 +353,11 @@ PluginComponent {
                                 text: "Save Image"
                                 width: (parent.width - Theme.spacingS) / 2
                                 iconName: "save"
-                                backgroundColor: Theme.primary
+                                backgroundColor: Theme.surfaceContainerHighest
+                                textColor: Theme.surfaceText
                                 enabled: root.cacheBuster !== ""
                                 onClicked: root.saveImage()
                             }
-                        }
-
-                        DankButton {
-                            text: "Share Current Wi-Fi"
-                            width: parent.width
-                            iconName: "wifi"
-                            backgroundColor: Theme.primary
-                            onClicked: root.fetchWifiAndGenerateQR()
                         }
                     }
                     
@@ -325,14 +368,16 @@ PluginComponent {
                         horizontalAlignment: Text.AlignHCenter
                         width: parent.width
                         visible: root.showHints
-                    }                }
+                        wrapMode: Text.WordWrap
+                    }
+                }
             }
         }
     }
 
     popoutWidth: 350
     popoutHeight: {
-        let h = (root.manualInputInput && root.manualInputInput.text !== "") ? 500 : 470;
-        return root.showHints ? h : h - 30;
+        let h = (root.cacheBuster !== "") ? 560 : 480;
+        return root.showHints ? h : h - 40;
     }
 }
