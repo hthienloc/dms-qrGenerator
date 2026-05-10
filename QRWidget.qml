@@ -273,6 +273,16 @@ PluginComponent {
                         width: parent.width
                         spacing: Theme.spacingM
 
+                        DankButton {
+                            id: wifiButton
+                            text: pluginRoot.isFetchingWifi ? "Fetching Wi-Fi..." : "Share Current Wi-Fi"
+                            width: parent.width
+                            iconName: pluginRoot.isFetchingWifi ? "sync" : "wifi"
+                            backgroundColor: Theme.secondary
+                            enabled: !pluginRoot.isFetchingWifi
+                            onClicked: pluginRoot.fetchWifiAndGenerateQR()
+                        }
+
                         DankTextField {
                             id: manualInput
                             width: parent.width
@@ -294,16 +304,6 @@ PluginComponent {
                                     pluginRoot.hasResult = false;
                                 }
                             }
-                        }
-
-                        DankButton {
-                            id: wifiButton
-                            text: pluginRoot.isFetchingWifi ? "Fetching Wi-Fi..." : "Share Current Wi-Fi"
-                            width: parent.width
-                            iconName: pluginRoot.isFetchingWifi ? "sync" : "wifi"
-                            backgroundColor: Theme.secondary
-                            enabled: !pluginRoot.isFetchingWifi
-                            onClicked: pluginRoot.fetchWifiAndGenerateQR()
                         }
                     }
 
