@@ -21,6 +21,7 @@ PluginComponent {
     property var manualInputInput: null
     property var activePopoutReference: null
     property bool hasResult: false
+    property bool isSaving: false
 
     // Dual-buffering to prevent flickering
     property bool useImageA: true
@@ -92,6 +93,8 @@ PluginComponent {
         if (!pluginRoot.hasResult) return;
         const activePath = pluginRoot.sourceA ? pluginRoot.pathA : pluginRoot.pathB;
         saveBrowserModal.activePath = activePath;
+        isSaving = true;
+        pluginRoot.closePopout();
         saveBrowserModal.open();
     }
 
@@ -106,6 +109,7 @@ PluginComponent {
         property string activePath: ""
 
         onFileSelected: filePath => {
+            isSaving = true;
             let destPath = filePath;
             if (destPath.startsWith("file://")) {
                 destPath = destPath.substring(7);
@@ -114,10 +118,11 @@ PluginComponent {
             }
             Proc.runCommand(
                 "export-qr",
-                ["sh", "-c", "cp '" + activePath + "' '" + destPath + "'"],
+                ["sh", "-c", "cp \"$1\" \"$2\"", "sh", activePath, destPath],
                 (stdout, exitCode) => {
+                    isSaving = false;
                     if (exitCode === 0) {
-                        ToastService.showInfo("Saved to " + destPath);
+                        ToastService.showInfo("Saved successfully!");
                     } else {
                         ToastService.showError("Failed to save image.");
                     }
@@ -126,6 +131,7 @@ PluginComponent {
             );
             close();
         }
+        onDialogClosed: isSaving = false
     }
 
     function copyImageToClipboard() {
@@ -327,7 +333,7 @@ PluginComponent {
                 }
 
                 Component.onDestruction: {
-                    if (pluginRoot.clearQrOnClose) {
+                    if (!pluginRoot.isSaving && pluginRoot.clearQrOnClose) {
                         pluginRoot.clearQR();
                     }
                 }
