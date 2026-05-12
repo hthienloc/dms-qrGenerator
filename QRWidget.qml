@@ -21,6 +21,7 @@ PluginComponent {
     property var manualInputInput: null
     property var activePopoutReference: null
     property bool hasResult: false
+    property bool saveDialogOpen: false
 
     // Dual-buffering to prevent flickering
     property bool useImageA: true
@@ -83,6 +84,8 @@ PluginComponent {
     }
 
     function saveImage() {
+        if (!pluginRoot.hasResult) return;
+        saveDialogOpen = true;
         saveBrowserModal.open();
     }
 
@@ -109,6 +112,7 @@ PluginComponent {
             );
             close();
         }
+        onClosing: pluginRoot.saveDialogOpen = false
     }
 
     function copyImageToClipboard() {
@@ -255,7 +259,7 @@ PluginComponent {
                 }
 
                 Component.onDestruction: {
-                    if (pluginRoot.clearQrOnClose) {
+                    if (pluginRoot.clearQrOnClose && !pluginRoot.saveDialogOpen) {
                         pluginRoot.clearQR();
                     }
                 }
