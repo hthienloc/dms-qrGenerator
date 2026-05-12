@@ -84,6 +84,8 @@ PluginComponent {
 
     function saveImage() {
         if (!pluginRoot.hasResult) return;
+        const activePath = pluginRoot.sourceA ? pluginRoot.pathA : pluginRoot.pathB;
+        saveBrowserModal.activePath = activePath;
         saveBrowserModal.open();
     }
 
@@ -94,11 +96,13 @@ PluginComponent {
         saveMode: true
         defaultFileName: "qr_" + new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19) + ".png"
         fileExtensions: ["*.png"]
+
+        property string activePath: ""
+
         onFileSelected: filePath => {
-            const activePath = pluginRoot.sourceA ? pluginRoot.pathA : pluginRoot.pathB;
             Proc.runCommand(
                 "export-qr",
-                ["sh", "-c", "base64 '" + activePath + "' | base64 -d > '" + filePath + "'"],
+                ["sh", "-c", "cp '" + activePath + "' '" + filePath + "'"],
                 (stdout, exitCode) => {
                     if (exitCode === 0) {
                         ToastService.showInfo("Saved to " + filePath);
