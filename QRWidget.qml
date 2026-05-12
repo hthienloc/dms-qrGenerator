@@ -432,11 +432,9 @@ PluginComponent {
                             placeholderText: "Type or paste text here..."
                             showClearButton: true
                             focus: true
+                            text: pluginRoot.currentText
                             Component.onCompleted: {
                                 pluginRoot.manualInputInput = manualInput;
-                                if (pluginRoot.currentText !== "") {
-                                    manualInput.text = pluginRoot.currentText;
-                                }
                             }
                             onTextEdited: pluginRoot.generateQR(text)
                             onEditingFinished: pluginRoot.generateQR(text)
