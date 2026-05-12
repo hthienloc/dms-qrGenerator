@@ -21,7 +21,6 @@ PluginComponent {
     property var manualInputInput: null
     property var activePopoutReference: null
     property bool hasResult: false
-    property bool saveDialogOpen: false
 
     // Dual-buffering to prevent flickering
     property bool useImageA: true
@@ -85,7 +84,6 @@ PluginComponent {
 
     function saveImage() {
         if (!pluginRoot.hasResult) return;
-        saveDialogOpen = true;
         saveBrowserModal.open();
     }
 
@@ -111,9 +109,6 @@ PluginComponent {
                 0
             );
             close();
-        }
-        onVisibleChanged: {
-            if (!visible) pluginRoot.saveDialogOpen = false;
         }
     }
 
@@ -262,17 +257,7 @@ PluginComponent {
 
                 Component.onDestruction: {
                     if (pluginRoot.clearQrOnClose) {
-                        clearTimer.start();
-                    }
-                }
-
-                Timer {
-                    id: clearTimer
-                    interval: 5000
-                    onTriggered: {
-                        if (!pluginRoot.saveDialogOpen) {
-                            pluginRoot.clearQR();
-                        }
+                        pluginRoot.clearQR();
                     }
                 }
 
