@@ -22,6 +22,8 @@ PluginComponent {
     property var activePopoutReference: null
     property bool hasResult: false
     property bool isSaving: false
+    property bool isDecoding: false
+    property string droppedImagePath: ""
 
     // Dual-buffering to prevent flickering
     property bool useImageA: true
@@ -42,7 +44,38 @@ PluginComponent {
         sourceA = "";
         sourceB = "";
         hasResult = false;
+        droppedImagePath = "";
         if (manualInputInput) manualInputInput.text = "";
+    }
+
+    function decodeQR(path) {
+        if (!path) return;
+        
+        let cleanPath = path;
+        if (cleanPath.startsWith("file://")) {
+            cleanPath = cleanPath.substring(7);
+        } else if (cleanPath.startsWith("file: ")) {
+            cleanPath = cleanPath.substring(6);
+        }
+
+        pluginRoot.isDecoding = true;
+        pluginRoot.droppedImagePath = "file://" + cleanPath;
+        
+        Proc.runCommand(
+            "decode-qr",
+            ["zbarimg", "--raw", "-q", cleanPath],
+            (stdout, exitCode) => {
+                pluginRoot.isDecoding = false;
+                if (exitCode === 0 && stdout.trim() !== "") {
+                    pluginRoot.generateQR(stdout.trim());
+                    ToastService.showInfo("QR Decoded!");
+                } else {
+                    pluginRoot.droppedImagePath = "";
+                    ToastService.showError("Failed to decode QR code.");
+                }
+            },
+            0
+        );
     }
 
     function generateQR(text) {
@@ -237,13 +270,14 @@ PluginComponent {
                 DankIcon {
                     name: "qr_code_2"
                     size: Theme.iconSizeSmall
-                    color: draggingOver ? Theme.primary : (pluginRoot.hasResult ? Theme.primary : Theme.surfaceText)
+                    color: draggingOver ? Theme.primary : (pluginRoot.hasResult || pluginRoot.isDecoding ? Theme.primary : Theme.surfaceText)
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
                 StyledText {
                     text: "QR"
                     font.pixelSize: Theme.fontSizeSmall
-                    color: pluginRoot.hasResult ? Theme.primary : Theme.surfaceText
+                    color: (pluginRoot.hasResult || pluginRoot.isDecoding) ? Theme.primary : Theme.surfaceText
                     anchors.verticalCenter: parent.verticalCenter
                     visible: pluginRoot.pillStyle === "text"
                 }
@@ -255,13 +289,22 @@ PluginComponent {
                 onExited: draggingOver = false
                 onDropped: (drop) => {
                     draggingOver = false;
+                    let urls = [];
                     if (drop.hasUrls) {
-                        drop.urls.forEach(url => {
-                            const text = url.toString();
-                            pluginRoot.generateQR(text);
-                        });
+                        urls = drop.urls.map(url => url.toString());
                     } else if (drop.hasText) {
-                        pluginRoot.generateQR(drop.text);
+                        urls = [drop.text];
+                    }
+
+                    if (urls.length > 0) {
+                        const firstUrl = urls[0];
+                        // Check if it's an image file
+                        const isImage = firstUrl.toLowerCase().match(/\.(png|jpg|jpeg|webp|bmp)$/);
+                        if (isImage) {
+                            pluginRoot.decodeQR(firstUrl);
+                        } else {
+                            pluginRoot.generateQR(firstUrl);
+                        }
                     }
                     pluginRoot.triggerPopout();
                 }
@@ -278,7 +321,7 @@ PluginComponent {
 
             Column {
                 id: verticalCol
-                spacing: Theme.spacingS
+                spacing: Theme.spacingXS
                 anchors.horizontalCenter: parent.horizontalCenter
                 scale: draggingOver ? 1.2 : 1.0
                 Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
@@ -286,8 +329,16 @@ PluginComponent {
                 DankIcon {
                     name: "qr_code_2"
                     size: Theme.iconSizeSmall
-                    color: draggingOver ? Theme.primary : (pluginRoot.hasResult ? Theme.primary : Theme.surfaceText)
+                    color: draggingOver ? Theme.primary : (pluginRoot.hasResult || pluginRoot.isDecoding ? Theme.primary : Theme.surfaceText)
                     anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                StyledText {
+                    text: "QR"
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: (pluginRoot.hasResult || pluginRoot.isDecoding) ? Theme.primary : Theme.surfaceText
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: pluginRoot.pillStyle === "text"
                 }
             }
 
@@ -297,13 +348,21 @@ PluginComponent {
                 onExited: draggingOver = false
                 onDropped: (drop) => {
                     draggingOver = false;
+                    let urls = [];
                     if (drop.hasUrls) {
-                        drop.urls.forEach(url => {
-                            const text = url.toString();
-                            pluginRoot.generateQR(text);
-                        });
+                        urls = drop.urls.map(url => url.toString());
                     } else if (drop.hasText) {
-                        pluginRoot.generateQR(drop.text);
+                        urls = [drop.text];
+                    }
+
+                    if (urls.length > 0) {
+                        const firstUrl = urls[0];
+                        const isImage = firstUrl.toLowerCase().match(/\.(png|jpg|jpeg|webp|bmp)$/);
+                        if (isImage) {
+                            pluginRoot.decodeQR(firstUrl);
+                        } else {
+                            pluginRoot.generateQR(firstUrl);
+                        }
                     }
                     pluginRoot.triggerPopout();
                 }
