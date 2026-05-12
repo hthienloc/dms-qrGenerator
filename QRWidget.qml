@@ -374,7 +374,7 @@ PluginComponent {
             PopoutComponent {
                 id: mainContent
                 width: parent ? parent.width : 0
-                headerText: "QR Generator"
+                headerText: "QR Generator & <small>Scanner</small>"
                 detailsText: ""
                 showCloseButton: true
                 focus: true
@@ -568,7 +568,7 @@ PluginComponent {
                             spacing: Theme.spacingXS
                             DankIcon { name: "lightbulb"; size: 14; color: Theme.primary }
                             StyledText {
-                                text: "Tip: Drop link/text onto pill icon"
+                                text: "Tip: Drop image to decode, link/text to generate"
                                 color: Theme.surfaceText
                                 font.pixelSize: Theme.fontSizeSmall
                             }
