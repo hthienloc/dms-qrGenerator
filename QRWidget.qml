@@ -106,14 +106,10 @@ PluginComponent {
             } else if (destPath.startsWith("file: ")) {
                 destPath = destPath.substring(6);
             }
-            console.log("DEBUG: activePath =", activePath);
-            console.log("DEBUG: destPath =", destPath);
             Proc.runCommand(
                 "export-qr",
                 ["sh", "-c", "cp '" + activePath + "' '" + destPath + "'"],
                 (stdout, exitCode) => {
-                    console.log("DEBUG: stdout =", stdout);
-                    console.log("DEBUG: exitCode =", exitCode);
                     if (exitCode === 0) {
                         ToastService.showInfo("Saved to " + destPath);
                     } else {
