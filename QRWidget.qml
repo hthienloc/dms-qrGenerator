@@ -28,6 +28,7 @@ PluginComponent {
     property string pathB: "/tmp/dms-qr-b.png"
     property string sourceA: ""
     property string sourceB: ""
+    property string lastGeneratedPath: ""
 
     Timer {
         id: debounceTimer
@@ -64,27 +65,29 @@ PluginComponent {
         // Generate to the "inactive" path
         const targetPath = pluginRoot.useImageA ? pluginRoot.pathB : pluginRoot.pathA;
         
-        Proc.runCommand(
-            "generate-qr",
-            ["qrencode", "-s", pluginRoot.qrSize, "-o", targetPath, trimmed],
-            (stdout, exitCode) => {
-                if (exitCode === 0) {
-                    const newSource = "file://" + targetPath + "?t=" + Date.now();
-                    if (pluginRoot.useImageA) {
-                        pluginRoot.sourceB = newSource;
-                    } else {
-                        pluginRoot.sourceA = newSource;
+            Proc.runCommand(
+                "generate-qr",
+                ["qrencode", "-s", pluginRoot.qrSize, "-o", targetPath, trimmed],
+                (stdout, exitCode) => {
+                    if (exitCode === 0) {
+                        const newSource = "file://" + targetPath + "?t=" + Date.now();
+                        pluginRoot.lastGeneratedPath = targetPath;
+                        if (pluginRoot.useImageA) {
+                            pluginRoot.sourceB = newSource;
+                        } else {
+                            pluginRoot.sourceA = newSource;
+                        }
+                        pluginRoot.hasResult = true;
                     }
-                    pluginRoot.hasResult = true;
-                }
-            },
-            0
-        )
+                },
+                0
+            )
     }
 
     function saveImage() {
         if (!pluginRoot.hasResult) return;
         const activePath = pluginRoot.sourceA ? pluginRoot.pathA : pluginRoot.pathB;
+        pluginRoot.lastGeneratedPath = activePath;
         saveBrowserModal.activePath = activePath;
         saveBrowserModal.open();
     }
@@ -100,10 +103,11 @@ PluginComponent {
         property string activePath: ""
 
         onFileSelected: filePath => {
-            console.log("DEBUG activePath:", activePath, "filePath:", filePath);
+            const srcPath = pluginRoot.lastGeneratedPath || activePath;
+            console.log("DEBUG srcPath:", srcPath, "filePath:", filePath);
             Proc.runCommand(
                 "export-qr",
-                ["sh", "-c", "cp '" + activePath + "' '" + filePath + "'"],
+                ["sh", "-c", "cp '" + srcPath + "' '" + filePath + "'"],
                 (stdout, exitCode) => {
                     console.log("DEBUG exitCode:", exitCode);
                     if (exitCode === 0) {
