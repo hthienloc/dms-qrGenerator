@@ -100,10 +100,12 @@ PluginComponent {
         property string activePath: ""
 
         onFileSelected: filePath => {
+            console.log("DEBUG activePath:", activePath, "filePath:", filePath);
             Proc.runCommand(
                 "export-qr",
                 ["sh", "-c", "cp '" + activePath + "' '" + filePath + "'"],
                 (stdout, exitCode) => {
+                    console.log("DEBUG exitCode:", exitCode);
                     if (exitCode === 0) {
                         ToastService.showInfo("Saved to " + filePath);
                     } else {
