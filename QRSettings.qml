@@ -58,36 +58,6 @@ PluginSettings {
         }
     }
 
-    // --- Exporting Section (High Priority) ---
-    StyledRect {
-        width: parent.width
-        height: exportColumn.implicitHeight + Theme.spacingL * 2
-        radius: Theme.cornerRadius
-        color: Theme.surfaceContainerHigh
-
-        Column {
-            id: exportColumn
-            anchors.fill: parent
-            anchors.margins: Theme.spacingL
-            spacing: Theme.spacingM
-
-            StyledText {
-                text: "Exporting"
-                font.pixelSize: Theme.fontSizeMedium
-                font.weight: Font.Medium
-                color: Theme.surfaceText
-            }
-
-            StringSetting {
-                settingKey: "savePath"
-                label: "Save Directory"
-                description: "Where to save exported QR code images."
-                placeholder: "~/Pictures/QRCodes"
-                defaultValue: "~/Pictures/QRCodes"
-            }
-        }
-    }
-
     // --- Display & UI Section (Lower Priority) ---
     StyledRect {
         width: parent.width

@@ -6,13 +6,13 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
+import qs.Modals.FileBrowser
 
 PluginComponent {
     id: pluginRoot
 
     readonly property bool clearQrOnClose: pluginData.clearQrOnClose ?? true
     readonly property string pillStyle: pluginData.pillStyle || "icon"
-    readonly property string savePath: pluginData.savePath || "~/Pictures/QRCodes"
     readonly property string qrSize: pluginData.qrSize || "6"
     readonly property bool showHints: pluginData.showHints ?? true
     
@@ -83,26 +83,32 @@ PluginComponent {
     }
 
     function saveImage() {
-        const activePath = pluginRoot.useImageA ? pluginRoot.pathA : pluginRoot.pathB;
-        if ((pluginRoot.useImageA && !pluginRoot.sourceA) || (!pluginRoot.useImageA && !pluginRoot.sourceB)) return;
-        
-        const cmd = "DIR=\"" + pluginRoot.savePath + "\"; " +
-                    "mkdir -p \"$DIR\"; " +
-                    "FILENAME=\"qr_$(date +%Y-%m-%d_%H%M%S).png\"; " +
-                    "cp " + activePath + " \"$DIR/$FILENAME\"";
-        
-        Proc.runCommand(
-            "export-qr",
-            ["sh", "-c", cmd],
-            (stdout, exitCode) => {
-                if (exitCode === 0) {
-                    ToastService.showInfo("Saved to " + pluginRoot.savePath);
-                } else {
-                    ToastService.showError("Failed to save image.");
-                }
-            },
-            0
-        )
+        saveBrowserModal.open();
+    }
+
+    FileBrowserModal {
+        id: saveBrowserModal
+        browserTitle: "Save QR Image"
+        browserIcon: "save"
+        saveMode: true
+        defaultFileName: "qr_" + new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19) + ".png"
+        fileExtensions: ["*.png"]
+        onFileSelected: filePath => {
+            const activePath = pluginRoot.useImageA ? pluginRoot.pathA : pluginRoot.pathB;
+            Proc.runCommand(
+                "export-qr",
+                ["sh", "-c", "cp " + activePath + " '" + filePath + "'"],
+                (stdout, exitCode) => {
+                    if (exitCode === 0) {
+                        ToastService.showInfo("Saved to " + filePath);
+                    } else {
+                        ToastService.showError("Failed to save image.");
+                    }
+                },
+                0
+            );
+            close();
+        }
     }
 
     function copyImageToClipboard() {
