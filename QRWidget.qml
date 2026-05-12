@@ -28,7 +28,6 @@ PluginComponent {
     property string pathB: "/tmp/dms-qr-b.png"
     property string sourceA: ""
     property string sourceB: ""
-    property string lastGeneratedPath: ""
 
     Timer {
         id: debounceTimer
@@ -65,29 +64,27 @@ PluginComponent {
         // Generate to the "inactive" path
         const targetPath = pluginRoot.useImageA ? pluginRoot.pathB : pluginRoot.pathA;
         
-            Proc.runCommand(
-                "generate-qr",
-                ["qrencode", "-s", pluginRoot.qrSize, "-o", targetPath, trimmed],
-                (stdout, exitCode) => {
-                    if (exitCode === 0) {
-                        const newSource = "file://" + targetPath + "?t=" + Date.now();
-                        pluginRoot.lastGeneratedPath = targetPath;
-                        if (pluginRoot.useImageA) {
-                            pluginRoot.sourceB = newSource;
-                        } else {
-                            pluginRoot.sourceA = newSource;
-                        }
-                        pluginRoot.hasResult = true;
+        Proc.runCommand(
+            "generate-qr",
+            ["qrencode", "-s", pluginRoot.qrSize, "-o", targetPath, trimmed],
+            (stdout, exitCode) => {
+                if (exitCode === 0) {
+                    const newSource = "file://" + targetPath + "?t=" + Date.now();
+                    if (pluginRoot.useImageA) {
+                        pluginRoot.sourceB = newSource;
+                    } else {
+                        pluginRoot.sourceA = newSource;
                     }
-                },
-                0
-            )
+                    pluginRoot.hasResult = true;
+                }
+            },
+            0
+        )
     }
 
     function saveImage() {
         if (!pluginRoot.hasResult) return;
         const activePath = pluginRoot.sourceA ? pluginRoot.pathA : pluginRoot.pathB;
-        pluginRoot.lastGeneratedPath = activePath;
         saveBrowserModal.activePath = activePath;
         saveBrowserModal.open();
     }
@@ -103,16 +100,22 @@ PluginComponent {
         property string activePath: ""
 
         onFileSelected: filePath => {
-            const srcPath = pluginRoot.lastGeneratedPath || activePath;
-            ToastService.showInfo("Saving from: " + srcPath);
+            console.log("DEBUG: activePath =", activePath);
+            console.log("DEBUG: filePath =", filePath);
+            console.log("DEBUG: sourceA =", pluginRoot.sourceA);
+            console.log("DEBUG: sourceB =", pluginRoot.sourceB);
+            console.log("DEBUG: pathA =", pluginRoot.pathA);
+            console.log("DEBUG: pathB =", pluginRoot.pathB);
             Proc.runCommand(
                 "export-qr",
-                ["sh", "-c", "cp '" + srcPath + "' '" + filePath + "'"],
+                ["sh", "-c", "echo 'filePath: " + filePath + "'; cp '" + activePath + "' '" + filePath + "'; echo 'cp_exit: '$?; ls -la '" + filePath + "'"],
                 (stdout, exitCode) => {
+                    console.log("DEBUG: stdout =", stdout);
+                    console.log("DEBUG: exitCode =", exitCode);
                     if (exitCode === 0) {
                         ToastService.showInfo("Saved to " + filePath);
                     } else {
-                        ToastService.showError("Failed to save. Path: " + srcPath);
+                        ToastService.showError("Failed to save image: " + stdout);
                     }
                 },
                 0
