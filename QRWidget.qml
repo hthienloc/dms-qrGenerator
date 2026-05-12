@@ -76,6 +76,12 @@ PluginComponent {
                         pluginRoot.sourceA = newSource;
                     }
                     pluginRoot.hasResult = true;
+                } else {
+                    if (stdout && stdout.includes("not found")) {
+                        ToastService.showError("qrencode is not installed. Please install it.");
+                    } else {
+                        ToastService.showError("Failed to generate QR code.");
+                    }
                 }
             },
             0
