@@ -214,32 +214,93 @@ PluginComponent {
     }
 
     horizontalBarPill: Component {
-        Row {
-            spacing: Theme.spacingS
-            DankIcon {
-                name: "qr_code_2"
-                size: Theme.iconSizeSmall
-                color: pluginRoot.hasResult ? Theme.primary : Theme.surfaceText
-                anchors.verticalCenter: parent.verticalCenter
+        Item {
+            implicitWidth: pillRow.implicitWidth + Theme.spacingM
+            implicitHeight: 32
+
+            property bool draggingOver: false
+
+            Row {
+                id: pillRow
+                anchors.centerIn: parent
+                spacing: Theme.spacingS
+
+                scale: draggingOver ? 1.1 : 1.0
+                Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
+
+                DankIcon {
+                    name: "qr_code_2"
+                    size: Theme.iconSizeSmall
+                    color: draggingOver ? Theme.primary : (pluginRoot.hasResult ? Theme.primary : Theme.surfaceText)
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+                StyledText {
+                    text: "QR"
+                    font.pixelSize: Theme.fontSizeMedium
+                    color: pluginRoot.hasResult ? Theme.primary : Theme.surfaceText
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: pluginRoot.pillStyle === "text"
+                }
             }
-            StyledText {
-                text: "QR"
-                font.pixelSize: Theme.fontSizeMedium
-                color: pluginRoot.hasResult ? Theme.primary : Theme.surfaceText
-                anchors.verticalCenter: parent.verticalCenter
-                visible: pluginRoot.pillStyle === "text"
+
+            DropArea {
+                anchors.fill: parent
+                onEntered: draggingOver = true
+                onExited: draggingOver = false
+                onDropped: (drop) => {
+                    draggingOver = false;
+                    if (drop.hasUrls) {
+                        drop.urls.forEach(url => {
+                            const text = url.toString();
+                            pluginRoot.generateQR(text);
+                        });
+                    } else if (drop.hasText) {
+                        pluginRoot.generateQR(drop.text);
+                    }
+                    pluginRoot.triggerPopout();
+                }
             }
         }
     }
 
     verticalBarPill: Component {
-        Column {
-            spacing: Theme.spacingS
-            DankIcon {
-                name: "qr_code_2"
-                size: Theme.iconSizeSmall
-                color: pluginRoot.hasResult ? Theme.primary : Theme.surfaceText
+        Item {
+            implicitWidth: 24
+            implicitHeight: verticalCol.implicitHeight
+
+            property bool draggingOver: false
+
+            Column {
+                id: verticalCol
+                spacing: Theme.spacingS
                 anchors.horizontalCenter: parent.horizontalCenter
+                scale: draggingOver ? 1.2 : 1.0
+                Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
+
+                DankIcon {
+                    name: "qr_code_2"
+                    size: Theme.iconSizeSmall
+                    color: draggingOver ? Theme.primary : (pluginRoot.hasResult ? Theme.primary : Theme.surfaceText)
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+            }
+
+            DropArea {
+                anchors.fill: parent
+                onEntered: draggingOver = true
+                onExited: draggingOver = false
+                onDropped: (drop) => {
+                    draggingOver = false;
+                    if (drop.hasUrls) {
+                        drop.urls.forEach(url => {
+                            const text = url.toString();
+                            pluginRoot.generateQR(text);
+                        });
+                    } else if (drop.hasText) {
+                        pluginRoot.generateQR(drop.text);
+                    }
+                    pluginRoot.triggerPopout();
+                }
             }
         }
     }
