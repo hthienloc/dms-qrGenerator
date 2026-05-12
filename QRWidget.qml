@@ -112,7 +112,9 @@ PluginComponent {
             );
             close();
         }
-        onDialogClosed: pluginRoot.saveDialogOpen = false
+        onVisibleChanged: {
+            if (!visible) pluginRoot.saveDialogOpen = false;
+        }
     }
 
     function copyImageToClipboard() {
@@ -259,8 +261,18 @@ PluginComponent {
                 }
 
                 Component.onDestruction: {
-                    if (pluginRoot.clearQrOnClose && !pluginRoot.saveDialogOpen) {
-                        pluginRoot.clearQR();
+                    if (pluginRoot.clearQrOnClose) {
+                        clearTimer.start();
+                    }
+                }
+
+                Timer {
+                    id: clearTimer
+                    interval: 100
+                    onTriggered: {
+                        if (!pluginRoot.saveDialogOpen) {
+                            pluginRoot.clearQR();
+                        }
                     }
                 }
 
