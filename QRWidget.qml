@@ -100,7 +100,7 @@ PluginComponent {
             const activePath = pluginRoot.useImageA ? pluginRoot.pathA : pluginRoot.pathB;
             Proc.runCommand(
                 "export-qr",
-                ["sh", "-c", "cp " + activePath + " '" + filePath + "'"],
+                ["sh", "-c", "cp '" + activePath + "' '" + filePath + "'"],
                 (stdout, exitCode) => {
                     if (exitCode === 0) {
                         ToastService.showInfo("Saved to " + filePath);
@@ -268,7 +268,7 @@ PluginComponent {
 
                 Timer {
                     id: clearTimer
-                    interval: 100
+                    interval: 5000
                     onTriggered: {
                         if (!pluginRoot.saveDialogOpen) {
                             pluginRoot.clearQR();
