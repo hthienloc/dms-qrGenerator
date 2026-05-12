@@ -125,19 +125,13 @@ PluginComponent {
     function copyImageToClipboard() {
         if (!pluginRoot.hasResult) return;
         const activePath = pluginRoot.sourceA ? pluginRoot.pathA : pluginRoot.pathB;
-        
-        Proc.runCommand(
-            "copy-qr-image",
-            ["sh", "-c", "wl-copy < " + activePath + " || xclip -selection clipboard -t image/png -i " + activePath],
-            (stdout, exitCode) => {
-                if (exitCode === 0) {
-                    ToastService.showInfo("QR Image copied to clipboard!");
-                } else {
-                    ToastService.showError("Failed to copy image to clipboard.");
-                }
-            },
-            0
-        )
+        DMSService.sendRequest("clipboard.copyFile", { "filePath": activePath }, function(response) {
+            if (response.error) {
+                ToastService.showError("Failed to copy image to clipboard.");
+            } else {
+                ToastService.showInfo("QR Image copied to clipboard!");
+            }
+        });
     }
 
     function copyToClipboard(text) {
