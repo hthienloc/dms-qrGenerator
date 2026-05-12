@@ -560,26 +560,33 @@ PluginComponent {
                     }
                     
                     Column {
-                        spacing: Theme.spacingXS
+                        width: parent.width - Theme.spacingL * 2
+                        spacing: Theme.spacingS
                         anchors.horizontalCenter: parent.horizontalCenter
                         visible: pluginRoot.showHints
 
                         Row {
+                            width: parent.width
                             spacing: Theme.spacingXS
-                            DankIcon { name: "lightbulb"; size: 14; color: Theme.primary }
+                            DankIcon { id: tipIcon1; name: "lightbulb"; size: 14; color: Theme.primary; anchors.top: parent.top; anchors.topMargin: 2 }
                             StyledText {
+                                width: parent.width - tipIcon1.width - parent.spacing
                                 text: "Tip: Drop image to decode, link/text to generate"
                                 color: Theme.surfaceText
                                 font.pixelSize: Theme.fontSizeSmall
+                                wrapMode: Text.WordWrap
                             }
                         }
                         Row {
+                            width: parent.width
                             spacing: Theme.spacingXS
-                            DankIcon { name: "info"; size: 14; color: Theme.primary }
+                            DankIcon { id: tipIcon2; name: "info"; size: 14; color: Theme.primary; anchors.top: parent.top; anchors.topMargin: 2 }
                             StyledText {
+                                width: parent.width - tipIcon2.width - parent.spacing
                                 text: "Right-click to paste, Enter to copy"
                                 color: Theme.surfaceText
                                 font.pixelSize: Theme.fontSizeSmall
+                                wrapMode: Text.WordWrap
                             }
                         }
                     }
