@@ -95,7 +95,7 @@ PluginComponent {
         defaultFileName: "qr_" + new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19) + ".png"
         fileExtensions: ["*.png"]
         onFileSelected: filePath => {
-            const activePath = pluginRoot.useImageA ? pluginRoot.pathA : pluginRoot.pathB;
+            const activePath = pluginRoot.sourceA ? pluginRoot.pathA : pluginRoot.pathB;
             Proc.runCommand(
                 "export-qr",
                 ["sh", "-c", "cp '" + activePath + "' '" + filePath + "'"],
@@ -113,8 +113,8 @@ PluginComponent {
     }
 
     function copyImageToClipboard() {
-        const activePath = pluginRoot.useImageA ? pluginRoot.pathA : pluginRoot.pathB;
-        if ((pluginRoot.useImageA && !pluginRoot.sourceA) || (!pluginRoot.useImageA && !pluginRoot.sourceB)) return;
+        if (!pluginRoot.hasResult) return;
+        const activePath = pluginRoot.sourceA ? pluginRoot.pathA : pluginRoot.pathB;
         
         Proc.runCommand(
             "copy-qr-image",
