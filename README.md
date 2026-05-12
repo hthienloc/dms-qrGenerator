@@ -15,16 +15,16 @@ Then in DMS: **Settings (Meta+,)** → **Plugins** → **Scan for Plugins** → 
 
 ### System Requirements
 
-This plugin requires `qrencode` to generate images and `wl-clipboard` (or `xclip`) for clipboard support.
+This plugin requires `qrencode` to generate QR codes.
 
 **Fedora:**
 ```bash
-sudo dnf install qrencode wl-clipboard xclip
+sudo dnf install qrencode
 ```
 
 **Arch:**
 ```bash
-sudo pacman -S qrencode wl-clipboard xclip
+sudo pacman -S qrencode
 ```
 
 ## Features
@@ -35,13 +35,13 @@ sudo pacman -S qrencode wl-clipboard xclip
     - **From Clipboard**: Quickly generate a QR code from your current clipboard content.
     - **Right-click Shortcut**: Right-click the bar icon to automatically pull from clipboard and open the generator.
 - **Export Options**:
-    - **Save Image**: Export the QR code as a PNG to your preferred directory (default: `~/Pictures/QRCodes`).
+    - **Save Image**: Export the QR code as a PNG using native file dialog.
     - **Copy Image**: Copy the generated QR image directly to your clipboard for easy sharing.
 - **Privacy Focus**: Automatically clears content when the popout is closed (configurable).
+- **Drag & Drop**: Drop links or text onto the pill icon to instantly generate QR.
 - **Customizable Appearance**:
     - **Bar Display**: Choose between "Icon Only" or "Icon + Text".
     - **Dynamic Colors**: Icon changes color when active content is present.
-- **Standardized Naming**: Exported files follow the `qr_YYYY-MM-DD_HHMMSS.png` format.
 
 ## Structure
 

@@ -120,7 +120,7 @@ PluginSettings {
 
             StyledText {
                 width: parent.width
-                text: "This plugin requires 'qrencode' to generate images and 'wl-clipboard' (or 'xclip') for clipboard support.\n\nFedora: sudo dnf install qrencode wl-clipboard xclip\nArch: sudo pacman -S qrencode wl-clipboard xclip"
+                text: "This plugin requires 'qrencode' to generate QR codes.\n\nFedora: sudo dnf install qrencode\nArch: sudo pacman -S qrencode"
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.surfaceVariantText
                 wrapMode: Text.WordWrap
