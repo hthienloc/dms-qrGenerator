@@ -94,28 +94,30 @@ PluginComponent {
         browserTitle: "Save QR Image"
         browserIcon: "save"
         saveMode: true
-        defaultFileName: "qr_" + new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19) + ".png"
+        defaultFileName: "qr_" + new Date().toISOString().replace(/[:.T]/g, '-').replace(/-/g, '').slice(0, 12) + ".png"
         fileExtensions: ["*.png"]
 
         property string activePath: ""
 
         onFileSelected: filePath => {
+            let destPath = filePath;
+            if (destPath.startsWith("file://")) {
+                destPath = destPath.substring(7);
+            } else if (destPath.startsWith("file: ")) {
+                destPath = destPath.substring(6);
+            }
             console.log("DEBUG: activePath =", activePath);
-            console.log("DEBUG: filePath =", filePath);
-            console.log("DEBUG: sourceA =", pluginRoot.sourceA);
-            console.log("DEBUG: sourceB =", pluginRoot.sourceB);
-            console.log("DEBUG: pathA =", pluginRoot.pathA);
-            console.log("DEBUG: pathB =", pluginRoot.pathB);
+            console.log("DEBUG: destPath =", destPath);
             Proc.runCommand(
                 "export-qr",
-                ["sh", "-c", "echo 'filePath: " + filePath + "'; cp '" + activePath + "' '" + filePath + "'; echo 'cp_exit: '$?; ls -la '" + filePath + "'"],
+                ["sh", "-c", "cp '" + activePath + "' '" + destPath + "'"],
                 (stdout, exitCode) => {
                     console.log("DEBUG: stdout =", stdout);
                     console.log("DEBUG: exitCode =", exitCode);
                     if (exitCode === 0) {
-                        ToastService.showInfo("Saved to " + filePath);
+                        ToastService.showInfo("Saved to " + destPath);
                     } else {
-                        ToastService.showError("Failed to save image: " + stdout);
+                        ToastService.showError("Failed to save image.");
                     }
                 },
                 0
