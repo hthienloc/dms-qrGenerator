@@ -100,14 +100,22 @@ PluginComponent {
         property string activePath: ""
 
         onFileSelected: filePath => {
+            console.log("DEBUG: activePath =", activePath);
+            console.log("DEBUG: filePath =", filePath);
+            console.log("DEBUG: sourceA =", pluginRoot.sourceA);
+            console.log("DEBUG: sourceB =", pluginRoot.sourceB);
+            console.log("DEBUG: pathA =", pluginRoot.pathA);
+            console.log("DEBUG: pathB =", pluginRoot.pathB);
             Proc.runCommand(
                 "export-qr",
-                ["sh", "-c", "cp '" + activePath + "' '" + filePath + "'"],
+                ["sh", "-c", "cp '" + activePath + "' '" + filePath + "' && echo 'SUCCESS' || echo 'FAILED with code: '$?"],
                 (stdout, exitCode) => {
+                    console.log("DEBUG: stdout =", stdout);
+                    console.log("DEBUG: exitCode =", exitCode);
                     if (exitCode === 0) {
                         ToastService.showInfo("Saved to " + filePath);
                     } else {
-                        ToastService.showError("Failed to save image.");
+                        ToastService.showError("Failed to save image: " + stdout);
                     }
                 },
                 0
