@@ -98,7 +98,7 @@ PluginComponent {
             const activePath = pluginRoot.sourceA ? pluginRoot.pathA : pluginRoot.pathB;
             Proc.runCommand(
                 "export-qr",
-                ["sh", "-c", "cp '" + activePath + "' '" + filePath + "'"],
+                ["sh", "-c", "base64 '" + activePath + "' | base64 -d > '" + filePath + "'"],
                 (stdout, exitCode) => {
                     if (exitCode === 0) {
                         ToastService.showInfo("Saved to " + filePath);
