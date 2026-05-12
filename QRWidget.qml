@@ -496,14 +496,23 @@ PluginComponent {
                         }
                     }
                     
-                    StyledText {
-                        text: "Hint: Right-click bar icon to pull from clipboard. [Enter] to copy QR."
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.surfaceVariantText
-                        horizontalAlignment: Text.AlignHCenter
-                        width: parent.width
+                    Column {
+                        spacing: Theme.spacingXS
+                        anchors.horizontalCenter: parent.horizontalCenter
                         visible: pluginRoot.showHints
-                        wrapMode: Text.WordWrap
+
+                        Row {
+                            spacing: Theme.spacingXS
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            DankIcon { name: "lightbulb"; size: 14; color: Theme.surfaceVariantText }
+                            StyledText { text: "Tip: Drop link/text onto pill icon to generate QR"; color: Theme.surfaceVariantText; font.pixelSize: Theme.fontSizeSmall }
+                        }
+                        Row {
+                            spacing: Theme.spacingXS
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            DankIcon { name: "info"; size: 14; color: Theme.surfaceVariantText }
+                            StyledText { text: "Right-click bar icon to pull from clipboard. [Enter] to copy QR."; color: Theme.surfaceVariantText; font.pixelSize: Theme.fontSizeSmall }
+                        }
                     }
                 }
             }
