@@ -68,7 +68,6 @@ PluginComponent {
                 pluginRoot.isDecoding = false;
                 if (exitCode === 0 && stdout.trim() !== "") {
                     pluginRoot.generateQR(stdout.trim());
-                    ToastService.showInfo("QR Decoded!");
                 } else {
                     pluginRoot.droppedImagePath = "";
                     ToastService.showError("Failed to decode QR code.");
