@@ -112,7 +112,7 @@ PluginComponent {
             );
             close();
         }
-        onClosing: pluginRoot.saveDialogOpen = false
+        onDialogClosed: pluginRoot.saveDialogOpen = false
     }
 
     function copyImageToClipboard() {
