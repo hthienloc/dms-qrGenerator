@@ -101,18 +101,18 @@ PluginSettings {
     // --- Requirements Section ---
     StyledRect {
         width: parent.width
-        height: requirementsColumn.implicitHeight + Theme.spacingL * 2
+        height: installColumn.implicitHeight + Theme.spacingL * 2
         radius: Theme.cornerRadius
         color: Theme.surfaceContainer
 
         Column {
-            id: requirementsColumn
+            id: installColumn
             anchors.fill: parent
             anchors.margins: Theme.spacingL
-            spacing: Theme.spacingS
+            spacing: Theme.spacingM
 
             StyledText {
-                text: "System Requirements"
+                text: "Installation"
                 font.pixelSize: Theme.fontSizeMedium
                 font.weight: Font.Medium
                 color: Theme.surfaceText
@@ -120,10 +120,72 @@ PluginSettings {
 
             StyledText {
                 width: parent.width
-                text: "This plugin requires 'qrencode' to generate QR codes.\n\nFedora: sudo dnf install qrencode\nArch: sudo pacman -S qrencode"
+                text: "Install the required package:"
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.surfaceVariantText
-                wrapMode: Text.WordWrap
+            }
+
+            Column {
+                width: parent.width
+                spacing: Theme.spacingS
+
+                Repeater {
+                    model: [
+                        { cmd: "sudo dnf install qrencode", label: "Fedora" },
+                        { cmd: "sudo pacman -S qrencode", label: "Arch Linux" },
+                        { cmd: "sudo apt install qrencode", label: "Debian/Ubuntu" },
+                        { cmd: "sudo zypper install qrencode", label: "openSUSE" }
+                    ]
+
+                    delegate: Column {
+                        width: parent.width
+                        spacing: 4
+
+                        StyledText {
+                            text: modelData.label
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.bold: true
+                            color: Theme.surfaceVariantText
+                        }
+
+                        Rectangle {
+                            width: parent.width
+                            height: Math.max(40, cmdRow.implicitHeight + 16)
+                            color: Theme.surfaceContainerHigh
+                            radius: 4
+
+                            Row {
+                                id: cmdRow
+                                width: parent.width - 16
+                                anchors.centerIn: parent
+                                spacing: 8
+
+                                StyledText {
+                                    width: parent.width - 32
+                                    text: modelData.cmd
+                                    font.family: "Monospace"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    color: Theme.secondary
+                                    wrapMode: Text.Wrap
+                                }
+
+                                DankButton {
+                                    width: 24
+                                    height: 24
+                                    iconName: "content_copy"
+                                    backgroundColor: "transparent"
+                                    textColor: Theme.primary
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    onClicked: {
+                                        Proc.runCommand("copy-cmd", ["wl-copy", "--", modelData.cmd], function() {
+                                            ToastService.showInfo("Copied to clipboard");
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
