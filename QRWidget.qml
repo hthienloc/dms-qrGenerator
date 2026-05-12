@@ -500,14 +500,14 @@ PluginComponent {
                         spacing: Theme.spacingXS
                         anchors.horizontalCenter: parent.horizontalCenter
                         visible: pluginRoot.showHints
-                        width: parent.width
+                        width: parent.width - Theme.spacingM
 
                         Row {
                             spacing: Theme.spacingXS
-                            DankIcon { name: "lightbulb"; size: 14; color: Theme.surfaceVariantText }
+                            DankIcon { name: "lightbulb"; size: 14; color: Theme.primary }
                             StyledText {
                                 text: "Tip: Drop link/text onto pill icon to generate QR"
-                                color: Theme.surfaceVariantText
+                                color: Theme.surfaceText
                                 font.pixelSize: Theme.fontSizeSmall
                                 wrapMode: Text.WordWrap
                                 width: parent.width - 20
@@ -515,10 +515,10 @@ PluginComponent {
                         }
                         Row {
                             spacing: Theme.spacingXS
-                            DankIcon { name: "info"; size: 14; color: Theme.surfaceVariantText }
+                            DankIcon { name: "info"; size: 14; color: Theme.primary }
                             StyledText {
                                 text: "Right-click bar icon to pull from clipboard"
-                                color: Theme.surfaceVariantText
+                                color: Theme.surfaceText
                                 font.pixelSize: Theme.fontSizeSmall
                                 wrapMode: Text.WordWrap
                                 width: parent.width - 20
