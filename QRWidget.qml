@@ -104,16 +104,15 @@ PluginComponent {
 
         onFileSelected: filePath => {
             const srcPath = pluginRoot.lastGeneratedPath || activePath;
-            console.log("DEBUG srcPath:", srcPath, "filePath:", filePath);
+            ToastService.showInfo("Saving from: " + srcPath);
             Proc.runCommand(
                 "export-qr",
                 ["sh", "-c", "cp '" + srcPath + "' '" + filePath + "'"],
                 (stdout, exitCode) => {
-                    console.log("DEBUG exitCode:", exitCode);
                     if (exitCode === 0) {
                         ToastService.showInfo("Saved to " + filePath);
                     } else {
-                        ToastService.showError("Failed to save image.");
+                        ToastService.showError("Failed to save. Path: " + srcPath);
                     }
                 },
                 0
