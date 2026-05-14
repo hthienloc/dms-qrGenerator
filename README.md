@@ -7,7 +7,7 @@ Generate and scan QR codes instantly.
 ## Install
 
 ```
-dms://plugin/install/qr-generator
+dms://plugin/install/qrGenerator
 ```
 
 Or manually:
