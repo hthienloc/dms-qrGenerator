@@ -570,7 +570,7 @@ PluginComponent {
                             DankIcon { id: tipIcon1; name: "lightbulb"; size: 14; color: Theme.primary; anchors.top: parent.top; anchors.topMargin: 2 }
                             StyledText {
                                 width: parent.width - tipIcon1.width - parent.spacing
-                                text: "Tip: Drop image to decode, link/text to generate"
+                                text: "Tip: Drop on pill icon to generate QR or decode image"
                                 color: Theme.surfaceText
                                 font.pixelSize: Theme.fontSizeSmall
                                 wrapMode: Text.WordWrap
