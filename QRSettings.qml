@@ -17,7 +17,6 @@ PluginSettings {
         color: Theme.surfaceText
     }
 
-    // --- Generation & Privacy Section (High Priority) ---
     StyledRect {
         width: parent.width
         height: genColumn.implicitHeight + Theme.spacingL * 2
@@ -58,7 +57,6 @@ PluginSettings {
         }
     }
 
-    // --- Display & UI Section (Lower Priority) ---
     StyledRect {
         width: parent.width
         height: displayColumn.implicitHeight + Theme.spacingL * 2
@@ -98,7 +96,6 @@ PluginSettings {
         }
     }
 
-    // --- Requirements Section ---
     StyledRect {
         width: parent.width
         height: installColumn.implicitHeight + Theme.spacingL * 2
