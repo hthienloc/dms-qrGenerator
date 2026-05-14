@@ -6,7 +6,7 @@ Generate and scan QR codes instantly.
 
 ## Install
 
-[<kbd>Install Now</kbd>](dms://plugin/install/qr-generator)
+[**Install Now**](dms://plugin/install/qr-generator)
 
 Or manually:
 ```bash
