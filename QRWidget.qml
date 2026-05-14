@@ -313,7 +313,7 @@ PluginComponent {
 
     verticalBarPill: Component {
         Item {
-            implicitWidth: 24
+            implicitWidth: Theme.iconSize
             implicitHeight: verticalCol.implicitHeight
 
             property bool draggingOver: false
