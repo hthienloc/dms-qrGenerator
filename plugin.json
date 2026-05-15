@@ -1,21 +1,21 @@
 {
-    "id": "qrGenerator",
-    "name": "QR Generator",
-    "description": "Generate QR codes from clipboard or text, with export support",
-    "version": "1.1.8",
-    "license": "GPL-3.0",
-    "author": "Loc Huynh",
-    "icon": "qr_code_2",
-    "type": "widget",
-    "capabilities": [
-        "dankbar-widget"
-    ],
-    "component": "./QRWidget.qml",
-    "settings": "./QRSettings.qml",
-    "permissions": [
-        "settings_read",
-        "settings_write",
-        "clipboard_read"
-    ],
-    "screenshot": "https://raw.githubusercontent.com/hthienloc/dms-qr-generator/master/screenshot.png"
+  "id": "qrGenerator",
+  "name": "QR Generator",
+  "description": "Generate QR codes from clipboard or text, with export support",
+  "version": "1.1.9",
+  "license": "GPL-3.0",
+  "author": "Loc Huynh",
+  "icon": "qr_code_2",
+  "type": "widget",
+  "capabilities": [
+    "dankbar-widget"
+  ],
+  "component": "./QRWidget.qml",
+  "settings": "./QRSettings.qml",
+  "permissions": [
+    "settings_read",
+    "settings_write",
+    "clipboard_read"
+  ],
+  "screenshot": "https://raw.githubusercontent.com/hthienloc/dms-qr-generator/master/screenshot.png"
 }
