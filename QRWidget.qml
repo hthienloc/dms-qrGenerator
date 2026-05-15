@@ -7,6 +7,8 @@ import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
 import qs.Modals.FileBrowser
+import "./components"
+
 
 PluginComponent {
     id: pluginRoot
@@ -558,35 +560,18 @@ PluginComponent {
                         }
                     }
                     
-                    Column {
+                    HintSection {
                         width: parent.width - Theme.spacingL * 2
-                        spacing: Theme.spacingS
                         anchors.horizontalCenter: parent.horizontalCenter
-                        visible: pluginRoot.showHints
+                        showHints: pluginRoot.showHints
 
-                        Row {
-                            width: parent.width
-                            spacing: Theme.spacingXS
-                            DankIcon { id: tipIcon1; name: "lightbulb"; size: 14; color: Theme.primary; anchors.top: parent.top; anchors.topMargin: 2 }
-                            StyledText {
-                                width: parent.width - tipIcon1.width - parent.spacing
-                                text: "Tip: Drop a link or image on the pill icon to generate/decode QR"
-                                color: Theme.surfaceText
-                                font.pixelSize: Theme.fontSizeSmall
-                                wrapMode: Text.WordWrap
-                            }
+                        HintItem {
+                            icon: "lightbulb"
+                            text: "Tip: Drop a link or image on the pill icon to generate/decode QR"
                         }
-                        Row {
-                            width: parent.width
-                            spacing: Theme.spacingXS
-                            DankIcon { id: tipIcon2; name: "info"; size: 14; color: Theme.primary; anchors.top: parent.top; anchors.topMargin: 2 }
-                            StyledText {
-                                width: parent.width - tipIcon2.width - parent.spacing
-                                text: "Right-click to paste, Enter to copy"
-                                color: Theme.surfaceText
-                                font.pixelSize: Theme.fontSizeSmall
-                                wrapMode: Text.WordWrap
-                            }
+                        HintItem {
+                            icon: "info"
+                            text: "Right-click to paste, Enter to copy"
                         }
                     }
                 }
