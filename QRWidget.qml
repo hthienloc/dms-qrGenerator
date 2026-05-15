@@ -564,7 +564,7 @@ PluginComponent {
                         }
                         HintItem {
                             icon: "info"
-                            text: "Right-click to paste, Enter to copy"
+                            text: "Right-click icon pill to paste, Enter to copy"
                         }
                     }
                 }
