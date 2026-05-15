@@ -4,184 +4,83 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
+import "./components"
 
 PluginSettings {
     id: root
     pluginId: "qrGenerator"
 
-    StyledText {
-        width: parent.width
-        text: "QR Generator Settings"
-        font.pixelSize: Theme.fontSizeLarge
-        font.weight: Font.Bold
-        color: Theme.surfaceText
+    PluginHeader {
+        title: "QR Generator Settings"
     }
 
-    StyledRect {
-        width: parent.width
-        height: genColumn.implicitHeight + Theme.spacingL * 2
-        radius: Theme.cornerRadius
-        color: Theme.surfaceContainerHigh
+    SettingsCard {
+        SectionTitle { text: "Generation & Privacy" }
 
-        Column {
-            id: genColumn
-            anchors.fill: parent
-            anchors.margins: Theme.spacingL
-            spacing: Theme.spacingM
+        ToggleSetting {
+            settingKey: "clearQrOnClose"
+            label: "Clear QR Code on Close"
+            description: "Automatically clear the text and QR code when you close the popout for privacy."
+            defaultValue: true
+        }
 
-            StyledText {
-                text: "Generation & Privacy"
-                font.pixelSize: Theme.fontSizeMedium
-                font.weight: Font.Medium
-                color: Theme.surfaceText
-            }
-
-            ToggleSetting {
-                settingKey: "clearQrOnClose"
-                label: "Clear QR Code on Close"
-                description: "Automatically clear the text and QR code when you close the popout for privacy."
-                defaultValue: true
-            }
-
-            SelectionSetting {
-                settingKey: "qrSize"
-                label: "QR Code Size"
-                description: "The resolution/scale of the generated QR code."
-                options: [
-                    { label: "Small", value: "3" },
-                    { label: "Medium", value: "6" },
-                    { label: "Large", value: "10" }
-                ]
-                defaultValue: "6"
-            }
+        SelectionSetting {
+            settingKey: "qrSize"
+            label: "QR Code Size"
+            description: "The resolution/scale of the generated QR code."
+            options: [
+                { label: "Small", value: "3" },
+                { label: "Medium", value: "6" },
+                { label: "Large", value: "10" }
+            ]
+            defaultValue: "6"
         }
     }
 
-    StyledRect {
-        width: parent.width
-        height: displayColumn.implicitHeight + Theme.spacingL * 2
-        radius: Theme.cornerRadius
-        color: Theme.surfaceContainerHigh
+    SettingsCard {
+        SectionTitle { text: "Display & UI" }
 
-        Column {
-            id: displayColumn
-            anchors.fill: parent
-            anchors.margins: Theme.spacingL
-            spacing: Theme.spacingM
+        SelectionSetting {
+            settingKey: "pillStyle"
+            label: "Bar Display Style"
+            description: "Choose how the plugin is displayed on the bar."
+            options: [
+                { label: "Icon Only", value: "icon" },
+                { label: "Icon + Text", value: "text" }
+            ]
+            defaultValue: "icon"
+        }
 
-            StyledText {
-                text: "Display & UI"
-                font.pixelSize: Theme.fontSizeMedium
-                font.weight: Font.Medium
-                color: Theme.surfaceText
-            }
-
-            SelectionSetting {
-                settingKey: "pillStyle"
-                label: "Bar Display Style"
-                description: "Choose how the plugin is displayed on the bar."
-                options: [
-                    { label: "Icon Only", value: "icon" },
-                    { label: "Icon + Text", value: "text" }
-                ]
-                defaultValue: "icon"
-            }
-
-            ToggleSetting {
-                settingKey: "showHints"
-                label: "Show Hints"
-                description: "Display helpful usage tips and shortcuts at the bottom of the popout."
-                defaultValue: true
-            }
+        ToggleSetting {
+            settingKey: "showHints"
+            label: "Show Hints"
+            description: "Display helpful usage tips and shortcuts at the bottom of the popout."
+            defaultValue: true
         }
     }
 
-    StyledRect {
-        width: parent.width
-        height: installColumn.implicitHeight + Theme.spacingL * 2
-        radius: Theme.cornerRadius
-        color: Theme.surfaceContainer
+    SettingsCard {
+        SectionTitle { text: "Installation" }
+
+        InfoText {
+            text: "Install the required package:"
+        }
 
         Column {
-            id: installColumn
-            anchors.fill: parent
-            anchors.margins: Theme.spacingL
-            spacing: Theme.spacingM
+            width: parent.width
+            spacing: Theme.spacingS
 
-            StyledText {
-                text: "Installation"
-                font.pixelSize: Theme.fontSizeMedium
-                font.weight: Font.Medium
-                color: Theme.surfaceText
-            }
+            Repeater {
+                model: [
+                    { cmd: "sudo dnf install qrencode", label: "Fedora" },
+                    { cmd: "sudo pacman -S qrencode", label: "Arch Linux" },
+                    { cmd: "sudo apt install qrencode", label: "Debian/Ubuntu" },
+                    { cmd: "sudo zypper install qrencode", label: "openSUSE" }
+                ]
 
-            StyledText {
-                width: parent.width
-                text: "Install the required package:"
-                font.pixelSize: Theme.fontSizeSmall
-                color: Theme.surfaceVariantText
-            }
-
-            Column {
-                width: parent.width
-                spacing: Theme.spacingS
-
-                Repeater {
-                    model: [
-                        { cmd: "sudo dnf install qrencode", label: "Fedora" },
-                        { cmd: "sudo pacman -S qrencode", label: "Arch Linux" },
-                        { cmd: "sudo apt install qrencode", label: "Debian/Ubuntu" },
-                        { cmd: "sudo zypper install qrencode", label: "openSUSE" }
-                    ]
-
-                    delegate: Column {
-                        width: parent.width
-                        spacing: 4
-
-                        StyledText {
-                            text: modelData.label
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.bold: true
-                            color: Theme.surfaceVariantText
-                        }
-
-                        Rectangle {
-                            width: parent.width
-                            height: Math.max(40, cmdRow.implicitHeight + 16)
-                            color: Theme.surfaceContainerHigh
-                            radius: 4
-
-                            Row {
-                                id: cmdRow
-                                width: parent.width - 16
-                                anchors.centerIn: parent
-                                spacing: 8
-
-                                StyledText {
-                                    width: parent.width - 32
-                                    text: modelData.cmd
-                                    font.family: "Monospace"
-                                    font.pixelSize: Theme.fontSizeSmall
-                                    color: Theme.secondary
-                                    wrapMode: Text.Wrap
-                                }
-
-                                DankButton {
-                                    width: 24
-                                    height: 24
-                                    iconName: "content_copy"
-                                    backgroundColor: "transparent"
-                                    textColor: Theme.primary
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    onClicked: {
-                                        Proc.runCommand("copy-cmd", ["wl-copy", "--", modelData.cmd], function() {
-                                            ToastService.showInfo("Copied to clipboard");
-                                        });
-                                    }
-                                }
-                            }
-                        }
-                    }
+                delegate: CopyBox {
+                    label: modelData.label
+                    text: modelData.cmd
                 }
             }
         }
