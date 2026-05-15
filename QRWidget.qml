@@ -493,15 +493,35 @@ PluginComponent {
                         }
 
                         // Unified Status Overlay
-                        StatusDisplay {
+                        DankIcon {
+                            name: "sync"
+                            size: 48
+                            color: Theme.primary
+                            visible: pluginRoot.isFetchingWifi
+                            
+                            RotationAnimation on rotation {
+                                running: pluginRoot.isFetchingWifi
+                                from: 0; to: 360; duration: 1000
+                                loops: Animation.Infinite
+                            }
+                        }
+                        Column {
                             anchors.centerIn: parent
-                            visible: !pluginRoot.hasResult || pluginRoot.isFetchingWifi || pluginRoot.isDecoding
-                            compact: !pluginRoot.isFetchingWifi && !pluginRoot.isDecoding
-                            iconName: pluginRoot.isFetchingWifi ? "sync" : (pluginRoot.isDecoding ? "document_scanner" : "qr_code_2")
-                            title: pluginRoot.isFetchingWifi ? "FETCHING" : (pluginRoot.isDecoding ? "DECODING" : "READY")
-                            subtitle: pluginRoot.isFetchingWifi ? "Retrieving Wi-Fi details..." : (pluginRoot.isDecoding ? "Scanning dropped image..." : "Type text to generate QR")
-                            active: pluginRoot.isFetchingWifi || pluginRoot.isDecoding
-                            opacity: (pluginRoot.isFetchingWifi || pluginRoot.isDecoding) ? 0.8 : 0.5
+                            spacing: Theme.spacingS
+                            visible: pluginRoot.sourceA === "" && pluginRoot.sourceB === "" && !pluginRoot.isFetchingWifi
+                            opacity: 0.5
+                            DankIcon {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                name: "qr_code_2"
+                                size: 48
+                                color: Theme.onSurfaceVariant
+                            }
+                            StyledText {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "Ready to generate"
+                                color: Theme.onSurfaceVariant
+                                font.pixelSize: Theme.fontSizeSmall
+                            }
                         }
                     }
 
