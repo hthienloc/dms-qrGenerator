@@ -496,11 +496,12 @@ PluginComponent {
                         StatusDisplay {
                             anchors.centerIn: parent
                             visible: !pluginRoot.hasResult || pluginRoot.isFetchingWifi || pluginRoot.isDecoding
+                            compact: !pluginRoot.isFetchingWifi && !pluginRoot.isDecoding
                             iconName: pluginRoot.isFetchingWifi ? "sync" : (pluginRoot.isDecoding ? "document_scanner" : "qr_code_2")
                             title: pluginRoot.isFetchingWifi ? "FETCHING" : (pluginRoot.isDecoding ? "DECODING" : "READY")
                             subtitle: pluginRoot.isFetchingWifi ? "Retrieving Wi-Fi details..." : (pluginRoot.isDecoding ? "Scanning dropped image..." : "Type text to generate QR")
                             active: pluginRoot.isFetchingWifi || pluginRoot.isDecoding
-                            opacity: 0.8
+                            opacity: (pluginRoot.isFetchingWifi || pluginRoot.isDecoding) ? 0.8 : 0.5
                         }
                     }
 
