@@ -125,7 +125,7 @@ PluginComponent {
 
     function saveImage() {
         if (!pluginRoot.hasResult) return;
-        const activePath = pluginRoot.sourceA ? pluginRoot.pathA : pluginRoot.pathB;
+        const activePath = pluginRoot.useImageA ? pluginRoot.pathA : pluginRoot.pathB;
         saveBrowserModal.activePath = activePath;
         isSaving = true;
         pluginRoot.closePopout();
@@ -170,7 +170,7 @@ PluginComponent {
 
     function copyImageToClipboard() {
         if (!pluginRoot.hasResult) return;
-        const activePath = pluginRoot.sourceA ? pluginRoot.pathA : pluginRoot.pathB;
+        const activePath = pluginRoot.useImageA ? pluginRoot.pathA : pluginRoot.pathB;
         DMSService.sendRequest("clipboard.copyFile", { "filePath": activePath }, function(response) {
             if (response.error) {
                 ToastService.showError("Failed to copy image to clipboard.");
