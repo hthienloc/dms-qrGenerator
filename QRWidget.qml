@@ -383,12 +383,17 @@ PluginComponent {
                 property var parentPopout: null
                 onParentPopoutChanged: pluginRoot.activePopoutReference = parentPopout
 
-                Connections {
-                    target: parentPopout
-                    function onOpened() {
-                        Qt.callLater(() => {
-                            if (pluginRoot.manualInputInput) pluginRoot.manualInputInput.forceActiveFocus();
-                        });
+                PluginShortcut {
+                    parentPopout: mainContent.parentPopout
+                    onOpened: () => {
+                        if (pluginRoot.manualInputInput) {
+                            pluginRoot.manualInputInput.forceActiveFocus();
+                        }
+                    }
+                    onEnterPressed: () => {
+                        if (pluginRoot.hasResult) {
+                            pluginRoot.copyImageToClipboard();
+                        }
                     }
                 }
 
@@ -402,15 +407,6 @@ PluginComponent {
                     width: parent.width
                     spacing: Theme.spacingL
                     focus: true
-
-                    Keys.onPressed: (event) => {
-                        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                            if (pluginRoot.hasResult) {
-                                pluginRoot.copyImageToClipboard();
-                            }
-                            event.accepted = true;
-                        }
-                    }
 
                     // 1. Input & Primary Generation Section
                     Column {
@@ -494,13 +490,14 @@ PluginComponent {
 
                         // Unified Status Overlay
                         DankIcon {
+                            anchors.centerIn: parent
                             name: "sync"
                             size: 48
                             color: Theme.primary
-                            visible: pluginRoot.isFetchingWifi
+                            visible: pluginRoot.isFetchingWifi || pluginRoot.isDecoding
                             
                             RotationAnimation on rotation {
-                                running: pluginRoot.isFetchingWifi
+                                running: pluginRoot.isFetchingWifi || pluginRoot.isDecoding
                                 from: 0; to: 360; duration: 1000
                                 loops: Animation.Infinite
                             }
