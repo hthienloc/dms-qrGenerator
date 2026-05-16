@@ -50,8 +50,10 @@ GPL-3.0
 
 ## Roadmap / TODO
 
-- [ ] Support for different QR code formats (Micro QR, Data Matrix).
-- [ ] Custom styling options: change QR colors and add a center logo/icon.
-- [ ] Local history of generated/scanned QR codes for quick access.
-- [ ] Support for generating VCard (Contact) and Calendar Event QR codes.
+- [ ] **High-quality SVG export** support for scalable graphics.
+- [ ] **Configurable Error Correction Level** (L, M, Q, H) for more robust codes.
+- [ ] **Dedicated Templates** for VCard (Contact) and Calendar Event generation.
+- [ ] **Local History** of generated/scanned QR codes (opt-in for privacy).
+- [ ] **Custom Styling**: Foreground/Background color selection and optional center logo overlay.
+- [ ] **Batch Generation** from a text file or newline-separated list.
 
