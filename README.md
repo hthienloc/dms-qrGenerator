@@ -14,7 +14,7 @@ Generate and scan QR codes instantly.
 git clone https://github.com/hthienloc/dms-common ~/.config/DankMaterialShell/plugins/dms-common
 
 # 2. Install this plugin
-dms://plugin/install/qrGenerator
+dms plugins install qrGenerator
 ```
 
 Or manually:
