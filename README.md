@@ -47,3 +47,11 @@ git clone https://github.com/hthienloc/dms-qr-generator ~/.config/DankMaterialSh
 ## License
 
 GPL-3.0
+
+## Roadmap / TODO
+
+- [ ] Support for different QR code formats (Micro QR, Data Matrix).
+- [ ] Custom styling options: change QR colors and add a center logo/icon.
+- [ ] Local history of generated/scanned QR codes for quick access.
+- [ ] Support for generating VCard (Contact) and Calendar Event QR codes.
+
